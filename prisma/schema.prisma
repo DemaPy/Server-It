@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  PROJECT_MANAGER
+  DEVELOPER
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String?
+  password  String
+  email     String     @unique
+  role      Role       @default(USER)
+  templates Template[]
+  campaigns Campaign[]
+
+  @@index([id])
+}
+
+model Template {
+  id    String @id @default(uuid())
+  title String
+
+  sections  Section[]
+  campaigns Campaign[]
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+
+  @@index([id])
+  @@index([userId])
+}
+
+model Campaign {
+  id     String   @id @default(uuid())
+  title  String
+  css    String
+  layout Layout[]
+  data   Json
+
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId String
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+
+  @@index([id])
+  @@index([templateId])
+  @@index([userId])
+}
+
+model Layout {
+  id    String @id @default(uuid())
+  order Int
+
+  section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId String
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId String
+
+  renderOn  Json
+  is_active Boolean
+
+  @@index([id])
+  @@index([campaignId])
+}
+
+model Section {
+  id      String @id @default(uuid())
+  title   String
+  content String
+
+  placeholders Placeholder[]
+  Layout       Layout[]
+
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId String
+
+  @@index([id])
+  @@index([templateId])
+}
+
+model Component {
+  id      String @id @default(uuid())
+  title   String
+  content String
+
+  placeholders Placeholder[]
+
+  @@index([id])
+}
+
+model Placeholder {
+  id       String @id @default(uuid())
+  title    String
+  position Int
+  fallback String
+
+  section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId String
+
+  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  componentId String
+
+  @@index([id])
+  @@index([sectionId])
+  @@index([componentId])
+}

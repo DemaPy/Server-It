@@ -1,0 +1,4 @@
+finish prisma schema add USER
+express validator
+implement JSON web token
+what todo if 1 request to DB failed (duplicate section)
