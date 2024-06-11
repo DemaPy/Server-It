@@ -93,7 +93,7 @@ export class AuthController {
       const { password, ...rest } = await prisma.user.create({
         data: {
           ...withHashedPassword,
-          role: Role.USER,
+          role: Role.DEVELOPER,
         },
       });
 
@@ -102,7 +102,7 @@ export class AuthController {
     } catch (error) {
       return res
         .status(400)
-        .json({ error: "An error occurred", message: error.message });
+        .json({ status: "error", error: "An error occurred", message: error.message });
     }
   }
 }

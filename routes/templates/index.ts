@@ -2,13 +2,14 @@ import { Router } from "express";
 import { Request, Response } from "express";
 import { templateDTO } from "../../middlewares/DTOS/templateDTO";
 import { prisma } from "../../db";
-import { Template } from "@prisma/client";
+import { Template, User } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export const templateRouter = Router();
 
 templateRouter.get("/", async (req: Request, res: Response) => {
   try {
-    const user = req.body.user
+    const user = req.body.user;
     const templates = await prisma.template.findMany({
       where: {
         userId: user.id,
@@ -60,12 +61,12 @@ templateRouter.get("/:id", async (req: Request, res: Response) => {
 
 templateRouter.post("/", templateDTO, async (req: Request, res: Response) => {
   try {
-    const user = req.body.user
-    const template: Template = req.body.template;
+    const user: User = req.body.user;
+    const template: Omit<Template, "id"> = req.body.template;
     const createdTemplate = await prisma.template.create({
       data: {
         title: template.title,
-        userId: user.id
+        userId: user.id,
       },
     });
     res.send({
@@ -75,10 +76,17 @@ templateRouter.post("/", templateDTO, async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.log(error);
+    if (error instanceof PrismaClientKnownRequestError) {
+      return res.send({
+        status: "error",
+        message: "Database write error",
+        data: req.body.template,
+      });
+    }
     res.send({
       status: "error",
-      message: "Template hasn't been created.",
-      data: req.body,
+      message: "Template hasn't been created." + error.message,
+      data: req.body.template,
     });
   }
 });
@@ -103,7 +111,7 @@ templateRouter.patch("/", templateDTO, async (req: Request, res: Response) => {
     res.send({
       status: "error",
       message: "Template hasn't been updated.",
-      data: req.body,
+      data: req.body.template,
     });
   }
 });

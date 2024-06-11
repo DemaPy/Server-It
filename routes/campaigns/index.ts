@@ -14,7 +14,7 @@
 import { Router } from "express";
 import { Request, Response } from "express";
 import { prisma } from "../../db";
-import { Campaign, Layout } from "@prisma/client";
+import { Campaign, Layout, User } from "@prisma/client";
 import { campaignDTO } from "../../middlewares/DTOS/campaignDTO";
 
 export const campaignRouter = Router();
@@ -46,7 +46,15 @@ campaignRouter.get("/:id", async (req: Request, res: Response) => {
       },
       include: {
         layout: true,
-        template: true
+        template: {
+          select: {
+            sections: {
+              include: {
+                placeholders: true
+              }
+            }
+          }
+        }
       },
     });
     res.send({
@@ -65,7 +73,8 @@ campaignRouter.get("/:id", async (req: Request, res: Response) => {
 
 campaignRouter.post("/", campaignDTO, async (req: Request, res: Response) => {
   try {
-    const campaign: Campaign = req.body.campaign;
+    const user: User = req.body.user;
+    const campaign: Omit<Campaign, "id"> = req.body.campaign;
     const template = await prisma.template.findUnique({
       where: {
         id: campaign.templateId,
@@ -82,9 +91,9 @@ campaignRouter.post("/", campaignDTO, async (req: Request, res: Response) => {
       data: {
         title: campaign.title,
         css: campaign.css,
-        data: [],
+        data: {},
         templateId: campaign.templateId,
-        userId: campaign.userId
+        userId: user.id
       },
     });
 
@@ -114,7 +123,7 @@ campaignRouter.post("/", campaignDTO, async (req: Request, res: Response) => {
     res.send({
       status: "error",
       message: "Campaign hasn't been created.",
-      data: req.body,
+      data: req.body.campaign
     });
   }
 });
@@ -139,7 +148,7 @@ campaignRouter.patch("/", campaignDTO, async (req: Request, res: Response) => {
     res.send({
       status: "error",
       message: "Campaign hasn't been updated.",
-      data: req.body,
+      data: req.body.campaign
     });
   }
 });

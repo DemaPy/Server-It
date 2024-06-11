@@ -8,7 +8,11 @@ export const componentRouter = Router();
 
 componentRouter.get("/", async (req: Request, res: Response) => {
   try {
-    const components = await prisma.component.findMany();
+    const components = await prisma.component.findMany({
+      include: {
+        placeholders: true
+      }
+    });
     res.send({
       status: "success",
       message: "",
@@ -37,7 +41,7 @@ componentRouter.get("/:id", async (req: Request, res: Response) => {
     });
     res.send({
       status: "success",
-      message: component === null ? "Component not found" : "Component found",
+      message: component === null ? `Component ${id} not found` : `Component ${id} found`,
       data: component,
     });
   } catch (error) {
@@ -51,7 +55,7 @@ componentRouter.get("/:id", async (req: Request, res: Response) => {
 
 componentRouter.post("/", componentDTO, async (req: Request, res: Response) => {
   try {
-    const component: Component = req.body.component;
+    const component: Omit<Component, "id"> = req.body.component;
     const createdComponent = await prisma.component.create({
       data: {
         title: component.title,
@@ -67,7 +71,7 @@ componentRouter.post("/", componentDTO, async (req: Request, res: Response) => {
     res.send({
       status: "error",
       message: "Component hasn't been created.",
-      data: req.body,
+      data: req.body.component
     });
   }
 });
@@ -96,7 +100,7 @@ componentRouter.patch(
       res.send({
         status: "error",
         message: "Component hasn't been updated.",
-        data: req.body,
+        data: req.body.component
       });
     }
   }

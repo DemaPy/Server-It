@@ -81,7 +81,7 @@ layoutRouter.patch("/", layoutDTO, async (req: Request, res: Response) => {
     res.send({
       status: "error",
       message: "Layout hasn't been updated.",
-      data: req.body,
+      data: req.body.layout
     });
   }
 });

@@ -11,8 +11,10 @@ import {
   authRouter,
   campaignRouter,
   layoutRouter,
-  placeholderRouter,
+  sectionPlaceholderRouter,
+  componentPlaceholdersRouter
 } from "./routes";
+import { body } from "express-validator";
 
 const app = express();
 
@@ -30,9 +32,10 @@ const MIDDLEWARES = [authMiddleware, roleMiddleware(['DEVELOPER', 'USER'])]
 
 app.use("/templates", MIDDLEWARES, templateRouter);
 app.use("/sections", MIDDLEWARES, sectionRouter);
-app.use("/palceholders", MIDDLEWARES, placeholderRouter);
+app.use("/section-palceholders", MIDDLEWARES, sectionPlaceholderRouter);
 
 app.use("/components", MIDDLEWARES, componentRouter);
+app.use("/component-palceholders", MIDDLEWARES, componentPlaceholdersRouter);
 
 app.use("/campaigns", MIDDLEWARES, campaignRouter);
 app.use("/layouts", MIDDLEWARES, layoutRouter);
