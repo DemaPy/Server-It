@@ -16,6 +16,7 @@ import { Request, Response } from "express";
 import { prisma } from "../../db";
 import { Campaign, Layout, User } from "@prisma/client";
 import { campaignDTO } from "../../middlewares/DTOS/campaignDTO";
+import { JsonObject } from "@prisma/client/runtime/library";
 
 export const campaignRouter = Router();
 
@@ -50,11 +51,11 @@ campaignRouter.get("/:id", async (req: Request, res: Response) => {
           select: {
             sections: {
               include: {
-                placeholders: true
-              }
-            }
-          }
-        }
+                placeholders: true,
+              },
+            },
+          },
+        },
       },
     });
     res.send({
@@ -86,14 +87,14 @@ campaignRouter.post("/", campaignDTO, async (req: Request, res: Response) => {
     if (!template) {
       throw new Error("Template not found.");
     }
-    
+
     const createdCampaign = await prisma.campaign.create({
       data: {
         title: campaign.title,
         css: campaign.css,
         data: {},
         templateId: campaign.templateId,
-        userId: user.id
+        userId: user.id,
       },
     });
 
@@ -117,13 +118,116 @@ campaignRouter.post("/", campaignDTO, async (req: Request, res: Response) => {
     res.send({
       status: "success",
       message: "Campaign has been created.",
-      data: {...createdCampaign, layout: createdLayouts},
+      data: { ...createdCampaign, layout: createdLayouts },
     });
   } catch (error) {
     res.send({
       status: "error",
       message: "Campaign hasn't been created.",
-      data: req.body.campaign
+      data: req.body.campaign,
+    });
+  }
+});
+
+campaignRouter.post("/:id/data", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const user: User = req.body.user;
+    delete req.body.user;
+    const placeholder_data: Record<
+      string,
+      Record<string, Record<string, string>>
+    > = req.body;
+
+    const sectionId = Object.keys(placeholder_data)[0];
+
+    const campaign = await prisma.campaign.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        layout: {
+          where: {
+            sectionId: sectionId,
+          },
+        },
+      },
+    });
+    if (!campaign) {
+      throw new Error("Campaign not found.");
+    }
+
+    const section = await prisma.section.findUnique({
+      where: {
+        id: sectionId,
+      },
+    });
+    if (!section) {
+      throw new Error("Section not found.");
+    }
+
+    let isSectionWithDataExists = false;
+    if (sectionId in (campaign.data as JsonObject)) {
+      isSectionWithDataExists = true;
+    }
+
+    const generateSlugs = () => {
+      const _slugs = {};
+      const allSlugs = Object.values(Object.values(placeholder_data)[0]);
+      for (const iterator of allSlugs) {
+        const slugs = Object.keys(iterator);
+        for (const slug of slugs) {
+          if (slug in _slugs) {
+            continue;
+          } else {
+            if (slug !== "") {
+              _slugs[slug] = true;
+            }
+          }
+        }
+      }
+      return _slugs;
+    };
+
+    const updated_campaign = await prisma.campaign.update({
+      where: {
+        id: id,
+      },
+      data: {
+        data: isSectionWithDataExists
+          ? {
+              ...(campaign.data as JsonObject),
+              [sectionId]: {
+                ...campaign.data[sectionId],
+                ...placeholder_data[sectionId],
+              },
+            }
+          : {
+              ...(campaign.data as JsonObject),
+              ...placeholder_data,
+            },
+      },
+    });
+
+    await prisma.layout.update({
+      where: {
+        id: campaign.layout[0].id,
+      },
+      data: {
+        renderOn: generateSlugs(),
+      },
+    });
+
+    res.send({
+      status: "success",
+      message: "Campaign data has been created.",
+      data: updated_campaign,
+    });
+  } catch (error) {
+    res.send({
+      status: "error",
+      message: "Campaign data hasn't been created.",
+      data: req.body.campaign,
     });
   }
 });
@@ -148,7 +252,7 @@ campaignRouter.patch("/", campaignDTO, async (req: Request, res: Response) => {
     res.send({
       status: "error",
       message: "Campaign hasn't been updated.",
-      data: req.body.campaign
+      data: req.body.campaign,
     });
   }
 });

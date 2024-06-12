@@ -1,14 +1,13 @@
 import { Router } from "express";
 import { UserController } from "../../entities/user/controller";
-import { authMiddleware } from "../../middlewares/authMiddleware";
-import { roleMiddleware } from "../../middlewares/roleMiddleware";
+import { param } from "express-validator";
 
 export const userRouter = Router();
 const Controller = new UserController();
 
+userRouter.get("/", Controller.getAllUsers);
 userRouter.get(
-  "/",
-  [authMiddleware, roleMiddleware(["DEVELOPER", "PROJECT_MANAGER"])],
-  Controller.getAllUsers
+  "/:id",
+  [param("id", "").exists().isString().notEmpty()],
+  Controller.getById
 );
-userRouter.get("/:id", Controller.getById);

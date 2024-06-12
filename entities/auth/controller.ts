@@ -11,7 +11,7 @@ const generateAccessToken = (data: User) => {
     role: data.role,
   };
   const token = jwt.sign(payload, "MY_SUPER_SECRET_KEY", {
-    expiresIn: "2h",
+    expiresIn: "4h",
   });
   return token;
 };
@@ -22,6 +22,10 @@ export class AuthController {
   async login(req, res) {
     try {
       // Check if data to login user is exists
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json(errors);
+      }
       const data = req.body;
       if ("email" in data && "password" in data) {
         userDTO["email"] = data.email;
@@ -90,15 +94,15 @@ export class AuthController {
         password: hashedPassword,
       };
 
-      const { password, ...rest } = await prisma.user.create({
-        data: {
-          ...withHashedPassword,
-          role: Role.DEVELOPER,
-        },
-      });
+      // const { password, ...rest } = await prisma.user.create({
+      //   data: {
+      //     ...withHashedPassword,
+      //     role: Role.USER,
+      //   },
+      // });
 
       // Return only NOT sensitive data
-      return res.status(200).json({ data: rest, status: "success" });
+      return res.status(200).json({ data: "Blocked to register new user.", status: "success" });
     } catch (error) {
       return res
         .status(400)

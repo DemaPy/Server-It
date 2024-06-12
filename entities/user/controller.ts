@@ -15,17 +15,16 @@ export class UserController {
   async getById(req, res) {
     try {
       const params = req.params;
-
-      if (!Number(params.id) || isNaN(params.id)) {
+      if (!("id" in params)) {
         throw new Error("Validation error");
       }
 
-      const user = await prisma.user.findUnique({
+      const {password, ...rest} = await prisma.user.findUnique({
         where: {
-          id: +params.id,
+          id: params.id,
         },
       });
-      return res.status(200).json({ status: "success", data: user });
+      return res.status(200).json({ status: "success", data: rest });
     } catch (error) {
       return res
         .status(400)

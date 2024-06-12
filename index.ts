@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 config();
-import cookieParser from 'cookie-parser'
+import cookieParser from "cookie-parser";
 import express from "express";
 import cors from "cors";
 import { authMiddleware, roleMiddleware } from "./middlewares";
@@ -12,10 +12,9 @@ import {
   campaignRouter,
   layoutRouter,
   sectionPlaceholderRouter,
-  componentPlaceholdersRouter
+  componentPlaceholdersRouter,
+  userRouter,
 } from "./routes";
-import { body } from "express-validator";
-
 const app = express();
 
 app.use(express.json());
@@ -26,21 +25,43 @@ var corsOptions = {
   allowedHeaders: "Content-Type,Authorization",
 };
 app.use(cors(corsOptions));
-app.use(cookieParser())
+app.use(cookieParser());
 
-const MIDDLEWARES = [authMiddleware, roleMiddleware(['DEVELOPER', 'USER'])]
+const MIDDLEWARES = {
+  admin: [
+    authMiddleware,
+    roleMiddleware(["DEVELOPER", "ADMIN"]),
+  ],
+  developer: [
+    authMiddleware,
+    roleMiddleware(["DEVELOPER", "ADMIN"]),
+  ],
+  private: [
+    authMiddleware,
+    roleMiddleware(["DEVELOPER", "ADMIN", "PROJECT_MANAGER"]),
+  ],
+  user: [
+    authMiddleware,
+    roleMiddleware(["DEVELOPER", "ADMIN", "PROJECT_MANAGER", "USER"]),
+  ],
+};
 
-app.use("/templates", MIDDLEWARES, templateRouter);
-app.use("/sections", MIDDLEWARES, sectionRouter);
-app.use("/section-palceholders", MIDDLEWARES, sectionPlaceholderRouter);
+app.use("/templates", MIDDLEWARES.private, templateRouter);
+app.use("/sections", MIDDLEWARES.private, sectionRouter);
+app.use("/section-palceholders", MIDDLEWARES.private, sectionPlaceholderRouter);
 
-app.use("/components", MIDDLEWARES, componentRouter);
-app.use("/component-palceholders", MIDDLEWARES, componentPlaceholdersRouter);
+app.use("/components", MIDDLEWARES.private, componentRouter);
+app.use(
+  "/component-palceholders",
+  MIDDLEWARES.private,
+  componentPlaceholdersRouter
+);
 
-app.use("/campaigns", MIDDLEWARES, campaignRouter);
-app.use("/layouts", MIDDLEWARES, layoutRouter);
+app.use("/campaigns", MIDDLEWARES.private, campaignRouter);
+app.use("/layouts", MIDDLEWARES.private, layoutRouter);
 
 app.use("/auth", authRouter);
+app.use("/user", MIDDLEWARES.private, userRouter);
 
 const PORT = process.env.PORT || 6666;
 app.listen(PORT, () => {

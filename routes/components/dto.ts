@@ -1,20 +1,21 @@
 import { Component } from "@prisma/client";
 
-export class ComponentDTO {
-  static extractFields(section: any): Component | Error {
-    if (!section || Array.isArray(section)) {
-      throw Error("Section not found");
-    }
-    
-    try {
-      const DTO: Component = {
-        id: section.id,
-        title: section.title,
-        content: section.content,
-      };
-      return DTO;
-    } catch (error) {
-      throw error
-    }
+export class CreateComponentDTO {
+  title: Component["title"];
+  content: Component["content"];
+  constructor(data: any) {
+    this.title = data.title;
+    this.content = data.content;
+  }
+}
+
+export class UpdateComponentDTO {
+  id: Component["id"];
+  title: Component["title"];
+  content: Component["content"];
+  constructor(data: any) {
+    this.id = data.id;
+    this.title = data.title;
+    this.content = data.content;
   }
 }

@@ -58,6 +58,7 @@ model Layout {
 
   @@index([id])
   @@index([campaignId])
+  @@index([sectionId])
 }
 
 model Section {

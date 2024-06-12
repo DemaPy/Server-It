@@ -1,14 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import { TemplateDTO } from "../../routes/templates/dto";
-import { Template } from "@prisma/client";
 
-export const templateDTO = (
+export const templateDTO = (DTO) => (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const template = TemplateDTO.extractFields(req.body);
+    const template = new DTO(req.body);
     req.body.template = template;
     next();
   } catch (error) {

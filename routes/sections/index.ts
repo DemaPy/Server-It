@@ -88,6 +88,7 @@ sectionRouter.post("/:id", sectionDTO, async (req: Request, res: Response) => {
       });
     }
 
+    // Create layout for all campaigns that use this template
     const campaigns = await prisma.campaign.findMany({
       where: {
         templateId: template.id,
@@ -168,6 +169,30 @@ sectionRouter.post("/", sectionDTO, async (req: Request, res: Response) => {
           content: section.content,
           templateId: section.templateId,
         },
+      });
+    }
+    
+    const campaigns = await prisma.campaign.findMany({
+      where: {
+        templateId: template.id,
+      },
+      include: {
+        layout: true,
+      },
+    });
+    if (campaigns.length > 0) {
+      const updatedLayouts = campaigns.map((item) => {
+        return {
+          sectionId: createdSection.id,
+          order: item.layout.length,
+          campaignId: item.id,
+          is_active: true,
+          renderOn: {},
+        };
+      });
+
+      await prisma.layout.createMany({
+        data: updatedLayouts,
       });
     }
 
