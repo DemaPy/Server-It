@@ -1,13 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import { LayoutDTO } from "../../routes/layouts/dto";
 
-export const layoutDTO = (
+export const layoutDTO = (DTO) => (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const layout = LayoutDTO.extractFields(req.body);
+    const layout = new DTO(req.body);
     req.body.layout = layout;
     next();
   } catch (error) {
@@ -20,3 +19,4 @@ export const layoutDTO = (
     console.error(error);
   }
 };
+

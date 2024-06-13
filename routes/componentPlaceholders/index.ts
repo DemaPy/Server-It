@@ -81,8 +81,6 @@ componentPlaceholdersRouter.post(
         data: placeholder
       })
 
-      console.log({component, placeholder, createdPlaceholder});
-
       res.send({
         status: "success",
         message: "Placeholder has been created.",

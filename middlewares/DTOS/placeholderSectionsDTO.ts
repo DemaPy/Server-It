@@ -8,7 +8,6 @@ export const placeholderDTO = (
 ) => {
   try {
     const placeholder = SectionPlaceholderDTO.extractFields(req.body);
-    console.log(placeholder);
     
     req.body.placeholder = placeholder;
     next();

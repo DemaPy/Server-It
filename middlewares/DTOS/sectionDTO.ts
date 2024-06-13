@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { SectionDTO } from "../../routes/sections/dto";
 
-export const sectionDTO = (req: Request, res: Response, next: NextFunction) => {
+export const sectionDTO = (DTO) => (req: Request, res: Response, next: NextFunction) => {
   try {
-    const section = SectionDTO.extractFields(req.body);
+    const section = new DTO(req.body);
     req.body.section = section;
     next();
   } catch (error) {

@@ -86,7 +86,6 @@ sectionPlaceholderRouter.post(
       const createdPlaceholder = await prisma.sectionPlaceholder.create({
         data: placeholder
       })
-      console.log({placeholder, section, createdPlaceholder})
       res.send({
         status: "success",
         message: "Placeholder has been created.",

@@ -112,7 +112,6 @@ export class ComponentController implements Controller {
       res.send({
         status: "error",
         message: "Component hasn't been updated.",
-        data: req.body.component,
       });
     }
   }

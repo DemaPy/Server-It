@@ -35,6 +35,10 @@ export class TemplateController implements Controller {
 
   async getOne(req: Request, res: Response) {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json(errors);
+      }
       const { id } = req.params;
       const template = await prisma.template.findUnique({
         where: {
@@ -101,6 +105,10 @@ export class TemplateController implements Controller {
 
   async update(req: Request, res: Response) {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json(errors);
+      }
       const template: UpdateTemplateDTO = req.body.template;
       const updatedTemplate = await prisma.template.update({
         where: {
@@ -126,6 +134,10 @@ export class TemplateController implements Controller {
 
   async delete(req: Request, res: Response) {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json(errors);
+      }
       const { id } = req.params;
       const deletedTemplate = await prisma.template.delete({
         where: {
