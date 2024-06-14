@@ -248,7 +248,7 @@ layoutRouter.delete("/:id", async (req: Request, res: Response) => {
       data: deletedLayout,
     });
   } catch (error) {
-    res.send({
+    res.status(400).send({
       status: "error",
       message: "Layout hasn't been deleted.",
       data: { id: req.params.id },

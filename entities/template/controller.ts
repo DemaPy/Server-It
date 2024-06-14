@@ -24,7 +24,7 @@ export class TemplateController implements Controller {
         data: templates,
       });
     } catch (error) {
-      res.send({
+      res.status(400).send({
         status: "error",
         message: "Something went wrong",
         error: error,
@@ -40,9 +40,13 @@ export class TemplateController implements Controller {
         return res.status(400).json(errors);
       }
       const { id } = req.params;
+      const user = req.body.user;
       const template = await prisma.template.findUnique({
         where: {
           id: id,
+          userId: {
+            equals: user.id,
+          }
         },
         include: {
           sections: {
@@ -58,7 +62,7 @@ export class TemplateController implements Controller {
         data: template,
       });
     } catch (error) {
-      res.send({
+      res.status(400).send({
         status: "error",
         message: "Something went wrong",
         data: null,
@@ -89,13 +93,13 @@ export class TemplateController implements Controller {
     } catch (error) {
       console.log(error);
       if (error instanceof PrismaClientKnownRequestError) {
-        return res.send({
+        return res.status(400).send({
           status: "error",
           message: "Database write error",
           data: req.body.template,
         });
       }
-      res.send({
+      res.status(400).send({
         status: "error",
         message: "Template hasn't been created." + error.message,
         data: req.body.template,
@@ -124,7 +128,7 @@ export class TemplateController implements Controller {
         data: updatedTemplate,
       });
     } catch (error) {
-      res.send({
+      res.status(400).send({
         status: "error",
         message: "Template hasn't been updated.",
         data: req.body.template,
@@ -150,7 +154,7 @@ export class TemplateController implements Controller {
         data: deletedTemplate,
       });
     } catch (error) {
-      res.send({
+      res.status(400).send({
         status: "error",
         message: "Template hasn't been deleted.",
         data: { id: req.params.id },

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { sectionDTO } from "../../middlewares/DTOS/sectionDTO";
 import { SectionValidation } from "./validation";
-import { SectionController } from "../../entities/section/Controller";
+import { SectionController } from "../../entities/section/controller";
 import { CreateSectionDTO, UpdateSectionDTO } from "./dto";
 
 export const sectionRouter = Router();

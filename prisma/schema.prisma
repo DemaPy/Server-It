@@ -8,13 +8,14 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(uuid())
+  id        String      @id @default(uuid())
   name      String?
-  email     String     @unique
-  role      Role       @default(USER)
+  email     String      @unique
+  role      Role        @default(USER)
   password  String
   campaigns Campaign[]
   templates Template[]
+  Component Component[]
 
   @@index([id])
 }
@@ -79,6 +80,8 @@ model Component {
   title        String
   content      String
   placeholders ComponentPlaceholder[]
+  userId       String
+  user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([id])
 }
@@ -108,6 +111,7 @@ model SectionPlaceholder {
 }
 
 enum Role {
+  GUEST
   USER
   ADMIN
   DEVELOPER

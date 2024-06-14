@@ -7,11 +7,17 @@ import {
   CreateComponentDTO,
   UpdateComponentDTO,
 } from "../../routes/components/dto";
+import { validationResult } from "express-validator";
+import { User } from "@prisma/client";
 
 export class ComponentController implements Controller {
   async getAll(req: Request, res: Response) {
     try {
+      const user: User = req.body.user;
       const components = await prisma.component.findMany({
+        where: {
+          userId: user.id,
+        },
         include: {
           placeholders: true,
         },
@@ -22,7 +28,7 @@ export class ComponentController implements Controller {
         data: components,
       });
     } catch (error) {
-      res.send({
+      res.status(400).send({
         status: "error",
         message: "Something went wrong",
         error: error,
@@ -36,10 +42,21 @@ export class ComponentController implements Controller {
     res: Response<any, Record<string, any>>
   ) {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
+      }
+
+      const user: User = req.body.user;
       const { id } = req.params;
       const component = await prisma.component.findUnique({
         where: {
           id: id,
+          userId: user.id,
         },
         include: {
           placeholders: true,
@@ -54,7 +71,7 @@ export class ComponentController implements Controller {
         data: component,
       });
     } catch (error) {
-      res.send({
+      res.status(400).send({
         status: "error",
         message: "Something went wrong",
         data: null,
@@ -67,11 +84,21 @@ export class ComponentController implements Controller {
     res: Response<any, Record<string, any>>
   ) {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
+      }
+      const user: User = req.body.user;
       const component: CreateComponentDTO = req.body.component;
       const createdComponent = await prisma.component.create({
         data: {
           title: component.title,
           content: component.content,
+          userId: user.id,
         },
       });
       res.send({
@@ -80,7 +107,7 @@ export class ComponentController implements Controller {
         data: createdComponent,
       });
     } catch (error) {
-      res.send({
+      res.status(400).send({
         status: "error",
         message: "Component hasn't been created.",
         data: req.body.component,
@@ -93,7 +120,75 @@ export class ComponentController implements Controller {
     res: Response<any, Record<string, any>>
   ) {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
+      }
+
+      const { position } = req.params;
+      const user: User = req.body.user;
       const component: UpdateComponentDTO = req.body.component;
+      const isComponentExist = await prisma.component.findUnique({
+        where: {
+          id: component.id,
+          userId: user.id,
+        },
+        include: {
+          placeholders: true,
+        },
+      });
+      if (!isComponentExist) {
+        throw new Error("Component not found.");
+      }
+
+      const shifting =
+        component.content.length - isComponentExist.content.length;
+      if (shifting > 0) {
+        const placeholdersToUpdate = isComponentExist.placeholders.map(
+          (item) => {
+            if (item.position > Number(position)) {
+              return {
+                ...item,
+                position: item.position + shifting,
+              };
+            }
+            return item;
+          }
+        );
+        for (const item of placeholdersToUpdate) {
+          await prisma.componentPlaceholder.update({
+            where: {
+              id: item.id,
+            },
+            data: item,
+          });
+        }
+      } else {
+        const placeholdersToUpdate = isComponentExist.placeholders.map(
+          (item) => {
+            if (item.position > Number(position)) {
+              return {
+                ...item,
+                position: item.position + shifting,
+              };
+            }
+            return item;
+          }
+        );
+        for (const item of placeholdersToUpdate) {
+          await prisma.componentPlaceholder.update({
+            where: {
+              id: item.id,
+            },
+            data: item,
+          });
+        }
+      }
+
       const updatedComponent = await prisma.component.update({
         where: {
           id: component.id,
@@ -102,6 +197,9 @@ export class ComponentController implements Controller {
           title: component.title,
           content: component.content,
         },
+        include: {
+          placeholders: true,
+        },
       });
       res.send({
         status: "success",
@@ -109,9 +207,11 @@ export class ComponentController implements Controller {
         data: updatedComponent,
       });
     } catch (error) {
-      res.send({
+      console.log(error);
+
+      res.status(400).send({
         status: "error",
-        message: "Component hasn't been updated.",
+        message: error.message,
       });
     }
   }
@@ -121,10 +221,21 @@ export class ComponentController implements Controller {
     res: Response<any, Record<string, any>>
   ) {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
+      }
+
       const { id } = req.params;
+      const user: User = req.body.user;
       const deletedComponent = await prisma.component.delete({
         where: {
           id: id,
+          userId: user.id,
         },
       });
       res.send({
@@ -133,7 +244,7 @@ export class ComponentController implements Controller {
         data: deletedComponent,
       });
     } catch (error) {
-      res.send({
+      res.status(400).send({
         status: "error",
         message: "Component hasn't been deleted.",
         data: { id: req.params.id },

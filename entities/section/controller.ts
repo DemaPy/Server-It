@@ -3,9 +3,13 @@ import { ParamsDictionary } from "express-serve-static-core";
 import { ParsedQs } from "qs";
 import { Controller } from "../type";
 import { prisma } from "../../db";
-import { ComponentPlaceholder, Section } from "@prisma/client";
-import { PrismaClientValidationError } from "@prisma/client/runtime/library";
+import { ComponentPlaceholder, Section, User } from "@prisma/client";
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientValidationError,
+} from "@prisma/client/runtime/library";
 import { validationResult } from "express-validator";
+import { CreateSectionDTO } from "../../routes/sections/dto";
 
 export class SectionController implements Controller {
   async delete(
@@ -18,6 +22,27 @@ export class SectionController implements Controller {
         return res.status(400).json(errors);
       }
       const { id } = req.params;
+      const user: User = req.body.user;
+
+      const templates = await prisma.template.findMany({
+        where: {
+          userId: user.id,
+        },
+        include: {
+          sections: true,
+        },
+      });
+      let isHaveAccessToDelete = false;
+      templates.forEach((item) => {
+        for (const section of item.sections) {
+          if (section.id === id) {
+            isHaveAccessToDelete = true;
+          }
+        }
+      });
+      if (!isHaveAccessToDelete) {
+        throw new Error("Section you are trying to delete doesn't exist.");
+      }
 
       const deletedSection = await prisma.section.delete({
         where: {
@@ -38,7 +63,9 @@ export class SectionController implements Controller {
           delete campaign.data[deletedSection.id];
           return campaign;
         });
-        await prisma.campaign.updateMany({ data: newCampaigns });
+        for (const item of newCampaigns) {
+          await prisma.campaign.updateMany({ data: newCampaigns });
+        }
       }
 
       res.send({
@@ -47,9 +74,11 @@ export class SectionController implements Controller {
         data: deletedSection,
       });
     } catch (error) {
-      res.send({
+      console.log(error);
+
+      res.status(400).send({
         status: "error",
-        message: "Section hasn't been deleted.",
+        message: error.message,
         data: { id: req.params.id },
       });
     }
@@ -64,18 +93,18 @@ export class SectionController implements Controller {
       if (!errors.isEmpty()) {
         return res.status(400).json(errors);
       }
-      const section: Omit<Section, "id"> = req.body.section;
+
+      const user: User = req.body.user;
+      const section: CreateSectionDTO = req.body.section;
       const placeholders: ComponentPlaceholder[] = req.body.placeholders;
       const template = await prisma.template.findUnique({
         where: {
           id: section.templateId,
-        },
-        include: {
-          sections: true,
+          userId: user.id,
         },
       });
       if (!template) {
-        throw new Error("Template not found.");
+        throw new Error("Template doesn't exist for this section.");
       }
 
       let createdSection;
@@ -139,12 +168,12 @@ export class SectionController implements Controller {
       console.log(error);
 
       if (error instanceof PrismaClientValidationError) {
-        return res.send({
+        return res.status(400).send({
           status: "error",
           message: error.message,
         });
       }
-      res.send({
+      res.status(400).send({
         status: "error",
         message: "Section hasn't been created.",
         data: req.body.section,
@@ -161,96 +190,7 @@ export class SectionController implements Controller {
   async getOne(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
     res: Response<any, Record<string, any>>
-  ) {
-    try {
-      const section: Omit<Section, "id"> = req.body.section;
-      const placeholders: ComponentPlaceholder[] = req.body.placeholders;
-      const template = await prisma.template.findUnique({
-        where: {
-          id: section.templateId,
-        },
-        include: {
-          sections: true,
-        },
-      });
-      if (!template) {
-        throw new Error("Template not found.");
-      }
-
-      let createdSection;
-      if (placeholders) {
-        createdSection = await prisma.section.create({
-          data: {
-            title: section.title,
-            content: section.content,
-            templateId: section.templateId,
-            placeholders: {
-              createMany: {
-                data: placeholders.map((item) => ({
-                  fallback: item.fallback,
-                  position: item.position,
-                  title: item.title,
-                })),
-              },
-            },
-          },
-        });
-      } else {
-        createdSection = await prisma.section.create({
-          data: {
-            title: section.title,
-            content: section.content,
-            templateId: section.templateId,
-          },
-        });
-      }
-
-      const campaigns = await prisma.campaign.findMany({
-        where: {
-          templateId: template.id,
-        },
-        include: {
-          layout: true,
-        },
-      });
-      if (campaigns.length > 0) {
-        const updatedLayouts = campaigns.map((item) => {
-          return {
-            sectionId: createdSection.id,
-            order: item.layout.length,
-            campaignId: item.id,
-            is_active: true,
-            renderOn: {},
-          };
-        });
-
-        await prisma.layout.createMany({
-          data: updatedLayouts,
-        });
-      }
-
-      res.send({
-        status: "success",
-        message: "Section has been created.",
-        data: createdSection,
-      });
-    } catch (error) {
-      console.log(error);
-
-      if (error instanceof PrismaClientValidationError) {
-        return res.send({
-          status: "error",
-          message: error.message,
-        });
-      }
-      res.send({
-        status: "error",
-        message: "Section hasn't been created.",
-        data: req.body.section,
-        error: error.message,
-      });
-    }
-  }
+  ) {}
 
   async update(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
@@ -261,7 +201,19 @@ export class SectionController implements Controller {
       if (!errors.isEmpty()) {
         return res.status(400).json(errors);
       }
+      const user: User = req.body.user;
       const section: Section = req.body.section;
+
+      const template = await prisma.template.findMany({
+        where: {
+          id: section.templateId,
+          userId: user.id,
+        },
+      });
+      if (!template) {
+        throw new Error("Template doesn't exist for this section.");
+      }
+
       const updatedSection = await prisma.section.update({
         where: {
           id: section.id,
@@ -277,7 +229,7 @@ export class SectionController implements Controller {
         data: updatedSection,
       });
     } catch (error) {
-      res.send({
+      res.status(400).send({
         status: "error",
         message: "Section hasn't been updated.",
         data: req.body.section,
@@ -295,6 +247,28 @@ export class SectionController implements Controller {
         return res.status(400).json(errors);
       }
       const { id } = req.params;
+      const user: User = req.body.user;
+
+      const templates = await prisma.template.findMany({
+        where: {
+          userId: user.id,
+        },
+        include: {
+          sections: true,
+        },
+      });
+      let isHaveAccessToDuplicate = false;
+      templates.forEach((item) => {
+        for (const section of item.sections) {
+          if (section.id === id) {
+            isHaveAccessToDuplicate = true;
+          }
+        }
+      });
+      if (!isHaveAccessToDuplicate) {
+        throw new Error("Section you are trying to duplicate doesn't exist for this template.");
+      }
+
       const sectionToDuplicate = await prisma.section.findUnique({
         where: {
           id: id,
@@ -364,9 +338,17 @@ export class SectionController implements Controller {
         data: createdSection,
       });
     } catch (error) {
-      res.send({
+      console.log(error);
+      if (error instanceof PrismaClientKnownRequestError) {
+        return res.status(400).send({
+          status: "error",
+          message: error.meta.cause,
+        });
+      }
+
+      res.status(400).send({
         status: "error",
-        message: "Section hasn't been duplicated.",
+        message: error.message,
         data: req.params,
       });
     }

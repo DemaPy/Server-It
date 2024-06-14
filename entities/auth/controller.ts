@@ -2,7 +2,7 @@ import { Role, User } from "@prisma/client";
 import { prisma } from "../../db";
 import { userDTO } from "../user/dto";
 import bcrypt from "bcrypt";
-import { validationResult } from "express-validator";
+import { Result, ValidationError, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 
 const generateAccessToken = (data: User) => {
@@ -24,7 +24,11 @@ export class AuthController {
       // Check if data to login user is exists
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json(errors);
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        })
       }
       const data = req.body;
       if ("email" in data && "password" in data) {
@@ -66,7 +70,11 @@ export class AuthController {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json(errors);
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          errors
+        })
       }
 
       // Check if data to create new user is exists
@@ -94,19 +102,19 @@ export class AuthController {
         password: hashedPassword,
       };
 
-      // const { password, ...rest } = await prisma.user.create({
-      //   data: {
-      //     ...withHashedPassword,
-      //     role: Role.USER,
-      //   },
-      // });
+      const { password, ...rest } = await prisma.user.create({
+        data: {
+          ...withHashedPassword,
+          role: Role.GUEST,
+        },
+      });
 
       // Return only NOT sensitive data
       return res.status(200).json({ data: "Blocked to register new user.", status: "success" });
     } catch (error) {
       return res
         .status(400)
-        .json({ status: "error", error: "An error occurred", message: error.message });
+        .json({ status: "error", message: error.message });
     }
   }
 }
