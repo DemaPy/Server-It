@@ -37,7 +37,11 @@ export class TemplateController implements Controller {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json(errors);
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
       }
       const { id } = req.params;
       const user = req.body.user;
@@ -74,7 +78,11 @@ export class TemplateController implements Controller {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json(errors);
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
       }
 
       const user: Omit<User, "password"> = req.body.user;
@@ -111,7 +119,11 @@ export class TemplateController implements Controller {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json(errors);
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
       }
       const template: UpdateTemplateDTO = req.body.template;
       const updatedTemplate = await prisma.template.update({
@@ -140,7 +152,11 @@ export class TemplateController implements Controller {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json(errors);
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
       }
       const { id } = req.params;
       const deletedTemplate = await prisma.template.delete({

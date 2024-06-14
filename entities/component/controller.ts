@@ -132,6 +132,7 @@ export class ComponentController implements Controller {
       const { position } = req.params;
       const user: User = req.body.user;
       const component: UpdateComponentDTO = req.body.component;
+      
       const isComponentExist = await prisma.component.findUnique({
         where: {
           id: component.id,

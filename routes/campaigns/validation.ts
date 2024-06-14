@@ -7,8 +7,8 @@ export class CampaignValidation {
 
   create() {
     return [
-      check("title", "Title is not valid.").exists().notEmpty().isString().isLength({
-        max: 10,
+      check("title", "Max: 20, Min: 3 symbols").exists().notEmpty().isString().isLength({
+        max: 20,
         min: 3,
       }),
       check("css", "Css is not valid.").exists().notEmpty().isString().isLength({
@@ -25,15 +25,21 @@ export class CampaignValidation {
     ];
   }
 
+  createData() {
+    return [
+      
+    ];
+  }
+
   update() {
     return [
       check("id", "Id is not valid.").exists().notEmpty().isString(),
-      check("title", "Title is not valid.")
+      check("title", "Max: 20, Min: 3 symbols")
         .exists()
         .notEmpty()
         .isString()
         .isLength({
-          max: 10,
+          max: 20,
           min: 3,
         }),
     ];

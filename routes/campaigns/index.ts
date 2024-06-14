@@ -154,7 +154,7 @@ campaignRouter.post(
   }
 );
 
-campaignRouter.post("/:id/data", Validation.create(), async (req: Request, res: Response) => {
+campaignRouter.post("/:id/data", Validation.createData(), async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

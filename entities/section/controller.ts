@@ -9,7 +9,7 @@ import {
   PrismaClientValidationError,
 } from "@prisma/client/runtime/library";
 import { validationResult } from "express-validator";
-import { CreateSectionDTO } from "../../routes/sections/dto";
+import { CreateSectionDTO, UpdateSectionDTO } from "../../routes/sections/dto";
 
 export class SectionController implements Controller {
   async delete(
@@ -19,7 +19,11 @@ export class SectionController implements Controller {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json(errors);
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
       }
       const { id } = req.params;
       const user: User = req.body.user;
@@ -64,7 +68,7 @@ export class SectionController implements Controller {
           return campaign;
         });
         for (const item of newCampaigns) {
-          await prisma.campaign.updateMany({ data: newCampaigns });
+          await prisma.campaign.update({ where: {id: item.id}, data: item });
         }
       }
 
@@ -91,7 +95,11 @@ export class SectionController implements Controller {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json(errors);
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
       }
 
       const user: User = req.body.user;
@@ -199,10 +207,15 @@ export class SectionController implements Controller {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json(errors);
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
       }
+      const { position } = req.params;
       const user: User = req.body.user;
-      const section: Section = req.body.section;
+      const section: UpdateSectionDTO = req.body.section;
 
       const template = await prisma.template.findMany({
         where: {
@@ -214,6 +227,57 @@ export class SectionController implements Controller {
         throw new Error("Template doesn't exist for this section.");
       }
 
+      const isSectionExist = await prisma.section.findUnique({
+        where: {
+          id: section.id,
+        },
+        include: {
+          placeholders: true,
+        },
+      });
+      if (!isSectionExist) {
+        throw new Error("Section not found.");
+      }
+
+      const shifting = section.content.length - isSectionExist.content.length;
+      if (shifting > 0) {
+        const placeholdersToUpdate = isSectionExist.placeholders.map((item) => {
+          if (item.position > Number(position)) {
+            return {
+              ...item,
+              position: item.position + shifting,
+            };
+          }
+          return item;
+        });
+        for (const item of placeholdersToUpdate) {
+          await prisma.sectionPlaceholder.update({
+            where: {
+              id: item.id,
+            },
+            data: item,
+          });
+        }
+      } else {
+        const placeholdersToUpdate = isSectionExist.placeholders.map((item) => {
+          if (item.position > Number(position)) {
+            return {
+              ...item,
+              position: item.position + shifting,
+            };
+          }
+          return item;
+        });
+        for (const item of placeholdersToUpdate) {
+          await prisma.sectionPlaceholder.update({
+            where: {
+              id: item.id,
+            },
+            data: item,
+          });
+        }
+      }
+
       const updatedSection = await prisma.section.update({
         where: {
           id: section.id,
@@ -222,6 +286,9 @@ export class SectionController implements Controller {
           title: section.title,
           content: section.content,
         },
+        include: {
+          placeholders: true,
+        },
       });
       res.send({
         status: "success",
@@ -229,6 +296,8 @@ export class SectionController implements Controller {
         data: updatedSection,
       });
     } catch (error) {
+      console.log(error);
+
       res.status(400).send({
         status: "error",
         message: "Section hasn't been updated.",
@@ -244,7 +313,11 @@ export class SectionController implements Controller {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json(errors);
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
       }
       const { id } = req.params;
       const user: User = req.body.user;
@@ -266,7 +339,9 @@ export class SectionController implements Controller {
         }
       });
       if (!isHaveAccessToDuplicate) {
-        throw new Error("Section you are trying to duplicate doesn't exist for this template.");
+        throw new Error(
+          "Section you are trying to duplicate doesn't exist for this template."
+        );
       }
 
       const sectionToDuplicate = await prisma.section.findUnique({

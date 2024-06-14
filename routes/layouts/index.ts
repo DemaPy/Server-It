@@ -9,46 +9,6 @@ import { check, validationResult } from "express-validator";
 
 export const layoutRouter = Router();
 
-// layoutRouter.get("/", async (req: Request, res: Response) => {
-//   try {
-//     const layouts = await prisma.layout.findMany();
-//     res.send({
-//       status: "success",
-//       message: "",
-//       data: layouts,
-//     });
-//   } catch (error) {
-//     res.send({
-//       status: "error",
-//       message: "Something went wrong",
-//       error: error,
-//       data: null,
-//     });
-//   }
-// });
-
-// layoutRouter.get("/:id", async (req: Request, res: Response) => {
-//   try {
-//     const { id } = req.params;
-//     const layout = await prisma.layout.findUnique({
-//       where: {
-//         id: id,
-//       },
-//     });
-//     res.send({
-//       status: "success",
-//       message: layout === null ? "Layout not found" : "Layout found",
-//       data: layout,
-//     });
-//   } catch (error) {
-//     res.send({
-//       status: "error",
-//       message: "Something went wrong",
-//       data: null,
-//     });
-//   }
-// });
-
 layoutRouter.patch(
   "/",
   layoutDTO(UpdateLayoutDTO),
@@ -83,7 +43,7 @@ layoutRouter.patch(
       if (error instanceof PrismaClientKnownRequestError) {
         res.status(422).send({
           status: "error",
-          message: error.meta.cause,
+          message: error?.meta?.cause,
         });
         return;
       }
@@ -116,6 +76,8 @@ layoutRouter.patch(
       const firstLayout: Layout = layouts[0];
       const secondLayout: Layout = layouts[1];
 
+      console.log(layouts);
+      
       const campaign = await prisma.campaign.findUnique({
         where: {
           id: firstLayout.campaignId,
@@ -158,19 +120,19 @@ layoutRouter.patch(
         });
 
       if (isOrderForTheSecondItemIsFromFirstItem.id !== firstLayout.id) {
-        throw new Error("What are you doing???");
+        throw new Error("What are you doing??? 1");
       }
 
       if (isOrderForTheSecondItemIsFromFirstItem.id !== firstLayout.id) {
-        throw new Error("What are you doing???");
+        throw new Error("What are you doing??? 2");
       }
 
       if (isOrderForTheFirstItemIsFromSecondItem.id !== secondLayout.id) {
-        throw new Error("What are you doing???");
+        throw new Error("What are you doing??? 3");
       }
 
       if (isOrderForTheFirstItemIsFromSecondItem.id !== secondLayout.id) {
-        throw new Error("What are you doing???");
+        throw new Error("What are you doing??? 4");
       }
 
       const layoutIsExist1 = await prisma.layout.findUnique({
@@ -188,22 +150,24 @@ layoutRouter.patch(
         throw new Error("Layout doesn't exist.");
       }
 
-      await prisma.layout.update({
-        where: {
-          id: firstLayout.id,
-        },
-        data: {
-          order: firstLayout.order,
-        },
-      });
-      await prisma.layout.update({
-        where: {
-          id: secondLayout.id,
-        },
-        data: {
-          order: secondLayout.order,
-        },
-      });
+
+
+      // await prisma.layout.update({
+      //   where: {
+      //     id: firstLayout.id,
+      //   },
+      //   data: {
+      //     order: firstLayout.order,
+      //   },
+      // });
+      // await prisma.layout.update({
+      //   where: {
+      //     id: secondLayout.id,
+      //   },
+      //   data: {
+      //     order: secondLayout.order,
+      //   },
+      // });
       res.send({
         status: "success",
         message: "Layout has been updated.",
@@ -212,7 +176,7 @@ layoutRouter.patch(
     } catch (error) {
       console.log(error);
       if (error instanceof Error) {
-        res.status(400).send({
+        return res.status(400).send({
           status: "error",
           message: error.message,
         });
@@ -221,14 +185,14 @@ layoutRouter.patch(
       if (error instanceof PrismaClientKnownRequestError) {
         res.status(422).send({
           status: "error",
-          message: error.meta.cause,
+          message: error?.meta?.cause,
         });
         return;
       }
 
       res.status(400).send({
         status: "error",
-        message: error.meta.cause,
+        message: error.meta?.cause,
       });
     }
   }
@@ -251,7 +215,6 @@ layoutRouter.delete("/:id", async (req: Request, res: Response) => {
     res.status(400).send({
       status: "error",
       message: "Layout hasn't been deleted.",
-      data: { id: req.params.id },
     });
   }
 });

@@ -12,10 +12,14 @@ export class CreateSectionDTO {
 }
 
 export class UpdateSectionDTO {
+  id: Section['id']
   title: Section['title']
   content: Section['content']
+  templateId: Section['templateId']
   constructor(data: any) {
+    this.id = data.id
     this.title = data.title
     this.content = data.content
+    this.templateId = data.templateId
   }
 }

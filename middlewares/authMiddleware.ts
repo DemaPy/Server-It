@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from "express";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 
 export const authMiddleware = (req, res, next) => {
@@ -9,7 +8,7 @@ export const authMiddleware = (req, res, next) => {
   try {
     const token = req.headers.authorization.split(" ")[1];
     if (!token) {
-      throw new Error("Access denied");
+      throw new Error("Token not found.");
     }
 
     const decodeData = jwt.verify(token, "MY_SUPER_SECRET_KEY");
@@ -19,12 +18,11 @@ export const authMiddleware = (req, res, next) => {
     if (error instanceof TokenExpiredError) {
       return res
       .status(401)
-      .json({ status: "error",  error: error, message: "Token expired.", code: 401 });
+      .json({ status: "error", message: "Token expired.", code: 401 });
     }
-    console.log(error);
     
     return res
       .status(403)
-      .json({ status: "error",  error: error, message: "Access denied.", code: 403 });
+      .json({ status: "error", message: error.message, code: 401 });
   }
 };
