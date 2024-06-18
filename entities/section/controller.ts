@@ -68,7 +68,7 @@ export class SectionController implements Controller {
           return campaign;
         });
         for (const item of newCampaigns) {
-          await prisma.campaign.update({ where: {id: item.id}, data: item });
+          await prisma.campaign.update({ where: { id: item.id }, data: item });
         }
       }
 
@@ -213,7 +213,6 @@ export class SectionController implements Controller {
           ...errors,
         });
       }
-      const { position } = req.params;
       const user: User = req.body.user;
       const section: UpdateSectionDTO = req.body.section;
 
@@ -240,41 +239,33 @@ export class SectionController implements Controller {
       }
 
       const shifting = section.content.length - isSectionExist.content.length;
-      if (shifting > 0) {
-        const placeholdersToUpdate = isSectionExist.placeholders.map((item) => {
-          if (item.position > Number(position)) {
-            return {
-              ...item,
-              position: item.position + shifting,
-            };
-          }
-          return item;
-        });
-        for (const item of placeholdersToUpdate) {
-          await prisma.sectionPlaceholder.update({
+      if (Math.abs(shifting) > 0) {
+        for (const item of isSectionExist.placeholders) {
+          await prisma.sectionPlaceholder.delete({
             where: {
               id: item.id,
             },
-            data: item,
           });
         }
-      } else {
-        const placeholdersToUpdate = isSectionExist.placeholders.map((item) => {
-          if (item.position > Number(position)) {
-            return {
-              ...item,
-              position: item.position + shifting,
-            };
-          }
-          return item;
-        });
-        for (const item of placeholdersToUpdate) {
-          await prisma.sectionPlaceholder.update({
-            where: {
-              id: item.id,
+        const campaigns = await prisma.campaign.findMany({
+          where: {
+            templateId: {
+              equals: section.templateId,
             },
-            data: item,
+          },
+        });
+  
+        if (campaigns) {
+
+          const newCampaigns = campaigns.map((campaign) => {
+            for (const item of isSectionExist.placeholders) {
+              delete campaign.data[section.id][item.id]
+            }
+            return campaign;
           });
+          for (const campaign of newCampaigns) {
+            await prisma.campaign.update({ where: { id: campaign.id }, data: campaign });
+          }
         }
       }
 

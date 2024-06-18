@@ -18,7 +18,7 @@ sectionRouter.post(
 );
 
 sectionRouter.patch(
-  "/:position",
+  "/",
   Validation.update(),
   sectionDTO(UpdateSectionDTO),
   Controller.update

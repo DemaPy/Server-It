@@ -16,7 +16,6 @@ export class ComponentValidation {
 
   update() {
     return [
-      param("position", "Position is not valid.").exists().notEmpty().isString(),
       check("id", "Id is not valid.").exists().notEmpty().isString(),
       check("title", "Max: 20, Min: 3 symbols")
         .exists()

@@ -20,7 +20,7 @@ componentRouter.post(
 );
 
 componentRouter.patch(
-  "/:position",
+  "/",
   Validation.update(),
   componentDTO(UpdateComponentDTO),
   Controller.update

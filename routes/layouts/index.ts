@@ -59,9 +59,8 @@ layoutRouter.patch(
 layoutRouter.patch(
   "/order",
   [
-    check("layouts", "Layouts is not valid.").exists().isArray({
-      min: 2,
-      max: 2,
+    check("layout", "Layouts is not valid.").exists().isArray({
+      min: 1,
     }),
   ],
   layoutDTO(UpdateLayoutsOrderDTO),
@@ -71,107 +70,44 @@ layoutRouter.patch(
       if (!errors.isEmpty()) {
         return res.status(400).json(errors);
       }
-      const { layouts }: UpdateLayoutsOrderDTO = req.body.layout;
+      const layout: UpdateLayoutsOrderDTO = req.body.layout;
 
-      const firstLayout: Layout = layouts[0];
-      const secondLayout: Layout = layouts[1];
-
-      console.log(layouts);
-      
       const campaign = await prisma.campaign.findUnique({
         where: {
-          id: firstLayout.campaignId,
+          id: layout.layout[0].campaignId,
         },
         include: {
-          layout: true,
-        },
-      });
-
-      if (
-        campaign.layout.length < firstLayout.order ||
-        campaign.layout.length - firstLayout.order < 0
-      ) {
-        throw new Error("Order 1 layout is not valid");
-      }
-
-      if (
-        campaign.layout.length < secondLayout.order ||
-        campaign.layout.length - secondLayout.order < 0
-      ) {
-        throw new Error("Order 2 layout is not valid");
-      }
-
-      const isOrderForTheSecondItemIsFromFirstItem =
-        await prisma.layout.findFirst({
-          where: {
-            order: {
-              equals: secondLayout.order,
+          template: {
+            select: {
+              sections: {
+                include: {
+                  placeholders: true,
+                },
+              },
             },
           },
-        });
+        },
+      });
+      if (!campaign) {
+        throw new Error("Campaign is not found");
+      }
 
-      const isOrderForTheFirstItemIsFromSecondItem =
-        await prisma.layout.findFirst({
+      for (const item of layout.layout) {
+        await prisma.layout.update({
           where: {
-            order: {
-              equals: firstLayout.order,
-            },
+            id: item.id,
           },
+          data: item,
         });
-
-      if (isOrderForTheSecondItemIsFromFirstItem.id !== firstLayout.id) {
-        throw new Error("What are you doing??? 1");
       }
 
-      if (isOrderForTheSecondItemIsFromFirstItem.id !== firstLayout.id) {
-        throw new Error("What are you doing??? 2");
-      }
-
-      if (isOrderForTheFirstItemIsFromSecondItem.id !== secondLayout.id) {
-        throw new Error("What are you doing??? 3");
-      }
-
-      if (isOrderForTheFirstItemIsFromSecondItem.id !== secondLayout.id) {
-        throw new Error("What are you doing??? 4");
-      }
-
-      const layoutIsExist1 = await prisma.layout.findUnique({
-        where: {
-          id: firstLayout.id,
-        },
-      });
-
-      const layoutIsExist2 = await prisma.layout.findUnique({
-        where: {
-          id: secondLayout.id,
-        },
-      });
-      if (!layoutIsExist1 || !layoutIsExist2) {
-        throw new Error("Layout doesn't exist.");
-      }
-
-
-
-      // await prisma.layout.update({
-      //   where: {
-      //     id: firstLayout.id,
-      //   },
-      //   data: {
-      //     order: firstLayout.order,
-      //   },
-      // });
-      // await prisma.layout.update({
-      //   where: {
-      //     id: secondLayout.id,
-      //   },
-      //   data: {
-      //     order: secondLayout.order,
-      //   },
-      // });
       res.send({
         status: "success",
         message: "Layout has been updated.",
-        data: campaign,
+        data: {
+          ...campaign,
+          layout: layout.layout,
+        },
       });
     } catch (error) {
       console.log(error);

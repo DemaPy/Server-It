@@ -129,10 +129,9 @@ export class ComponentController implements Controller {
         });
       }
 
-      const { position } = req.params;
       const user: User = req.body.user;
       const component: UpdateComponentDTO = req.body.component;
-      
+
       const isComponentExist = await prisma.component.findUnique({
         where: {
           id: component.id,
@@ -148,44 +147,12 @@ export class ComponentController implements Controller {
 
       const shifting =
         component.content.length - isComponentExist.content.length;
-      if (shifting > 0) {
-        const placeholdersToUpdate = isComponentExist.placeholders.map(
-          (item) => {
-            if (item.position > Number(position)) {
-              return {
-                ...item,
-                position: item.position + shifting,
-              };
-            }
-            return item;
-          }
-        );
-        for (const item of placeholdersToUpdate) {
-          await prisma.componentPlaceholder.update({
+      if (Math.abs(shifting) > 0) {
+        for (const item of isComponentExist.placeholders) {
+          await prisma.componentPlaceholder.delete({
             where: {
               id: item.id,
             },
-            data: item,
-          });
-        }
-      } else {
-        const placeholdersToUpdate = isComponentExist.placeholders.map(
-          (item) => {
-            if (item.position > Number(position)) {
-              return {
-                ...item,
-                position: item.position + shifting,
-              };
-            }
-            return item;
-          }
-        );
-        for (const item of placeholdersToUpdate) {
-          await prisma.componentPlaceholder.update({
-            where: {
-              id: item.id,
-            },
-            data: item,
           });
         }
       }
