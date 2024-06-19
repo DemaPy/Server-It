@@ -1,13 +1,3 @@
 what todo if 1 request to DB failed (duplicate section)
 optimize way of uploading CSV data 1 button for adding data instead of for every single placeholder
-fix shifting for sections and components when:
-    -removing content from HTML
-    (
-        shift placeholders that has position bigger than modified
-        remove placeholder if position of this polaceholder is included into removed content
-    )
-    -adding content to HTML
-    (
-        shift placeholders, that has position bigger than user modified
-    )
 handle responses in client side: error, token expired etc.

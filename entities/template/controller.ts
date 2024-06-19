@@ -8,14 +8,18 @@ import {
   UpdateTemplateDTO,
 } from "../../routes/templates/dto";
 import { Controller } from "../type";
+import { UserToken } from "../auth/controller";
 
 export class TemplateController implements Controller {
   async getAll(req: Request, res: Response) {
     try {
-      const user = req.body.user;
+      const user: UserToken = req.body.user;
       const templates = await prisma.template.findMany({
         where: {
-          userId: user.id,
+          userId:
+            user.role === "GUEST"
+              ? "9a1b4cbd-1a07-4ab9-a287-bd421daafcbb"
+              : user.id,
         },
       });
       res.send({
@@ -48,9 +52,10 @@ export class TemplateController implements Controller {
       const template = await prisma.template.findUnique({
         where: {
           id: id,
-          userId: {
-            equals: user.id,
-          }
+          userId:
+            user.role === "GUEST"
+              ? "9a1b4cbd-1a07-4ab9-a287-bd421daafcbb"
+              : user.id,
         },
         include: {
           sections: {

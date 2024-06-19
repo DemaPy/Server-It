@@ -1,4 +1,3 @@
-import { Template } from "@prisma/client";
 import { Request, Response } from "express";
 
 export interface Controller {

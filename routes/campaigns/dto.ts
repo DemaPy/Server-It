@@ -1,23 +1,23 @@
-import { Campaign, Prisma } from "@prisma/client";
+import { Campaign } from "@prisma/client";
 
-export class CampaignDTO {
-  static extractFields(campaign: any): Campaign | Error {
-    if (!campaign || Array.isArray(campaign)) {
-      throw Error("Campaign not found");
-    }
-    try {
-      const DTO: Campaign = {
-        id: campaign.id,
-        css: campaign.css,
-        title: campaign.title,
-        templateId: campaign.templateId,
+export class CreateCampaignDTO {
+  css: Campaign["css"];
+  title: Campaign["title"];
+  templateId: Campaign["templateId"];
+  constructor(data: any) {
+    this.title = data.title;
+    this.templateId = data.templateId;
+    this.css = data.css;
+  }
+}
 
-        userId: campaign.userId,
-        data: [] as Prisma.JsonArray,
-      };
-      return DTO;
-    } catch (error) {
-      throw error;
-    }
+export class UpdateCampaignDTO {
+  id: Campaign["id"];
+  title: Campaign["title"];
+  css: Campaign["css"];
+  constructor(data: any) {
+    this.id = data.id;
+    this.title = data.title;
+    this.css = data.css;
   }
 }

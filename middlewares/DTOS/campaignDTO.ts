@@ -1,13 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import { CampaignDTO } from "../../routes/campaigns/dto";
 
-export const campaignDTO = (
+export const campaignDTO = (DTO) => (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const campaign = CampaignDTO.extractFields(req.body);
+    const campaign = new DTO(req.body);
     req.body.campaign = campaign;
     next();
   } catch (error) {

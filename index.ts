@@ -3,7 +3,6 @@ config();
 import cookieParser from "cookie-parser";
 import express from "express";
 import cors from "cors";
-import { authMiddleware, roleMiddleware } from "./middlewares";
 import {
   templateRouter,
   sectionRouter,
@@ -27,38 +26,18 @@ var corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
-const MIDDLEWARES = {
-  admin: [authMiddleware, roleMiddleware(["DEVELOPER", "ADMIN"])],
-  private: [
-    authMiddleware,
-    roleMiddleware(["DEVELOPER", "ADMIN", "PROJECT_MANAGER"]),
-  ],
-  user: [
-    authMiddleware,
-    roleMiddleware(["DEVELOPER", "ADMIN", "PROJECT_MANAGER", "USER"]),
-  ],
-  guest: [
-    authMiddleware,
-    roleMiddleware(["DEVELOPER", "ADMIN", "PROJECT_MANAGER", "USER", "GUEST"]),
-  ],
-};
+app.use("/templates", templateRouter);
+app.use("/sections", sectionRouter);
+app.use("/section-palceholders", sectionPlaceholderRouter);
 
-app.use("/templates", MIDDLEWARES.guest, templateRouter);
-app.use("/sections", MIDDLEWARES.guest, sectionRouter);
-app.use("/section-palceholders", MIDDLEWARES.guest, sectionPlaceholderRouter);
+app.use("/components", componentRouter);
+app.use("/component-palceholders", componentPlaceholdersRouter);
 
-app.use("/components", MIDDLEWARES.guest, componentRouter);
-app.use(
-  "/component-palceholders",
-  MIDDLEWARES.guest,
-  componentPlaceholdersRouter
-);
-
-app.use("/campaigns", MIDDLEWARES.guest, campaignRouter);
-app.use("/layouts", MIDDLEWARES.guest, layoutRouter);
+app.use("/campaigns", campaignRouter);
+app.use("/layouts", layoutRouter);
 
 app.use("/auth", authRouter);
-app.use("/user", MIDDLEWARES.admin, userRouter);
+app.use("/user", userRouter);
 
 const PORT = process.env.PORT || 6666;
 app.listen(PORT, () => {

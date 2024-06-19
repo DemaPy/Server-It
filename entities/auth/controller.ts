@@ -2,10 +2,15 @@ import { Role, User } from "@prisma/client";
 import { prisma } from "../../db";
 import { userDTO } from "../user/dto";
 import bcrypt from "bcrypt";
-import { Result, ValidationError, validationResult } from "express-validator";
+import { validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 
-const generateAccessToken = (data: User) => {
+export type UserToken = {
+  id: User["id"];
+  role: User["role"];
+};
+
+const generateAccessToken = (data: UserToken) => {
   const payload = {
     id: data.id,
     role: data.role,
@@ -28,7 +33,7 @@ export class AuthController {
           status: "error",
           message: "Validation error",
           ...errors,
-        })
+        });
       }
       const data = req.body;
       if ("email" in data && "password" in data) {
@@ -58,11 +63,16 @@ export class AuthController {
       const token = generateAccessToken(candidate);
 
       // res.cookie("accessToken", token, {maxAge: 3600, httpOnly: true})
-      return res.json({ status: "success", data: {token} });
+      return res.json({ status: "success", data: { token } });
     } catch (error) {
       return res
         .status(400)
-        .json({ status: "error", error: "An error occurred", message: error.message, code: 404 });
+        .json({
+          status: "error",
+          error: "An error occurred",
+          message: error.message,
+          code: 404,
+        });
     }
   }
 
@@ -73,8 +83,8 @@ export class AuthController {
         return res.status(400).send({
           status: "error",
           message: "Validation error",
-          errors
-        })
+          errors,
+        });
       }
 
       // Check if data to create new user is exists
@@ -110,11 +120,11 @@ export class AuthController {
       });
 
       // Return only NOT sensitive data
-      return res.status(200).json({ data: "Blocked to register new user.", status: "success" });
-    } catch (error) {
       return res
-        .status(400)
-        .json({ status: "error", message: error.message });
+        .status(200)
+        .json({ data: "Blocked to register new user.", status: "success" });
+    } catch (error) {
+      return res.status(400).json({ status: "error", message: error.message });
     }
   }
 }

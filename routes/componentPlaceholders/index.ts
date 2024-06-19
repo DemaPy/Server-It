@@ -4,11 +4,13 @@ import { prisma } from "../../db";
 import { ComponentPlaceholder } from "@prisma/client";
 import { placeholderDTO } from "../../middlewares/DTOS/placeholdersComponentDTO";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { MIDDLEWARES } from "../../middlewares/guard";
 
 export const componentPlaceholdersRouter = Router();
 
 componentPlaceholdersRouter.post(
   "/",
+  MIDDLEWARES.user,
   placeholderDTO,
   async (req: Request, res: Response) => {
     try {
@@ -46,6 +48,7 @@ componentPlaceholdersRouter.post(
 
 componentPlaceholdersRouter.patch(
   "/",
+  MIDDLEWARES.user,
   placeholderDTO,
   async (req: Request, res: Response) => {
     try {
@@ -75,6 +78,7 @@ componentPlaceholdersRouter.patch(
 
 componentPlaceholdersRouter.delete(
   "/:id",
+  MIDDLEWARES.user,
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
@@ -98,14 +102,14 @@ componentPlaceholdersRouter.delete(
       });
     } catch (error) {
       console.log(error);
-      
+
       if (error instanceof PrismaClientKnownRequestError) {
         return res.send({
           status: "error",
           message: error.meta.cause,
         });
       }
-      
+
       res.status(400).send({
         status: "error",
         message: "Placeholder hasn't been deleted.",

@@ -2,15 +2,16 @@ import { Router } from "express";
 import { Request, Response } from "express";
 import { prisma } from "../../db";
 import { layoutDTO } from "../../middlewares/DTOS/layoutDTO";
-import { Layout } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { UpdateLayoutDTO, UpdateLayoutsOrderDTO } from "./dto";
 import { check, validationResult } from "express-validator";
+import { MIDDLEWARES } from "../../middlewares/guard";
 
 export const layoutRouter = Router();
 
 layoutRouter.patch(
   "/",
+  MIDDLEWARES.user,
   layoutDTO(UpdateLayoutDTO),
   async (req: Request, res: Response) => {
     try {
@@ -58,6 +59,7 @@ layoutRouter.patch(
 
 layoutRouter.patch(
   "/order",
+  MIDDLEWARES.user,
   [
     check("layout", "Layouts is not valid.").exists().isArray({
       min: 1,
@@ -134,23 +136,27 @@ layoutRouter.patch(
   }
 );
 
-layoutRouter.delete("/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const deletedLayout = await prisma.layout.delete({
-      where: {
-        id: id,
-      },
-    });
-    res.send({
-      status: "success",
-      message: "Layout has been deleted.",
-      data: deletedLayout,
-    });
-  } catch (error) {
-    res.status(400).send({
-      status: "error",
-      message: "Layout hasn't been deleted.",
-    });
+layoutRouter.delete(
+  "/:id",
+  MIDDLEWARES.user,
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const deletedLayout = await prisma.layout.delete({
+        where: {
+          id: id,
+        },
+      });
+      res.send({
+        status: "success",
+        message: "Layout has been deleted.",
+        data: deletedLayout,
+      });
+    } catch (error) {
+      res.status(400).send({
+        status: "error",
+        message: "Layout hasn't been deleted.",
+      });
+    }
   }
-});
+);
