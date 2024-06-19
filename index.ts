@@ -39,9 +39,7 @@ app.use("/layouts", layoutRouter);
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
 
-app.get("/", (req, res) => res.send("Express on Vercel"));
-
 const PORT = process.env.PORT || 6666;
-app.listen(3000, () => {
-  console.log("Server started at port:", 3000);
+app.listen(PORT , () => {
+  console.log("Server started at port:", PORT );
 });
