@@ -26,11 +26,11 @@ export const roleMiddleware = (roles: Role[]) => (req, res, next) => {
       req.body.user = decodeData;
       next();
     } else {
-      throw new Error("Route available only for developers. Spierdalaj.");
+      throw new Error("Ooops, looks like you don't have access.");
     }
   } catch (error) {
     return res
       .status(403)
-      .json({ status: "success", message: error.message || "Access denied.", error: error, code: 403 });
+      .json({ status: "error", message: error.message || "Access denied." });
   }
 };

@@ -35,7 +35,6 @@ model Template {
 model Campaign {
   id         String   @id @default(uuid())
   title      String
-  css        String
   data       Json
   templateId String
   userId     String

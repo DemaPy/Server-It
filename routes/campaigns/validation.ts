@@ -11,10 +11,6 @@ export class CampaignValidation {
         max: 20,
         min: 3,
       }),
-      check("css", "Css is not valid.").exists().notEmpty().isString().isLength({
-        max: 10000,
-        min: 3,
-      }),
       check("templateId", "Template id is not valid.")
         .exists()
         .notEmpty()

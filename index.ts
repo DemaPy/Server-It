@@ -40,6 +40,6 @@ app.use("/auth", authRouter);
 app.use("/user", userRouter);
 
 const PORT = process.env.PORT || 6666;
-app.listen(PORT , () => {
-  console.log("Server started at port:", PORT );
+app.listen(PORT, () => {
+  console.log("Server started at port:", PORT);
 });

@@ -45,7 +45,6 @@ export class CampaignController implements Controller {
       const createdCampaign = await prisma.campaign.create({
         data: {
           title: campaign.title,
-          css: campaign.css,
           data: {},
           templateId: campaign.templateId,
           userId: user.id,
@@ -285,7 +284,6 @@ export class CampaignController implements Controller {
         },
         data: {
           title: campaign.title,
-          css: campaign.css,
         },
       });
       res.send({
