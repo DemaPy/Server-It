@@ -11,6 +11,14 @@ export class ComponentValidation {
         max: 20,
         min: 3,
       }),
+      check("content", "Content is not valid.")
+      .exists()
+      .notEmpty()
+      .isString()
+      .isLength({
+        max: 1000000,
+        min: 10,
+      }),
     ];
   }
 
@@ -30,7 +38,7 @@ export class ComponentValidation {
         .notEmpty()
         .isString()
         .isLength({
-          max: 10000,
+          max: 1000000,
           min: 10,
         }),
     ];

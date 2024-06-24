@@ -18,7 +18,7 @@ export class SectionValidation {
         })
         .isString(),
       check("content", "Content is not valid.").exists().notEmpty().isLength({
-        max: 10000,
+        max: 1000000,
         min: 3,
       }),
       check("templateId", "Template id is not valid.")
@@ -47,7 +47,7 @@ export class SectionValidation {
         .notEmpty()
         .isString()
         .isLength({
-          max: 10000,
+          max: 1000000,
           min: 10,
         }),
     ];
