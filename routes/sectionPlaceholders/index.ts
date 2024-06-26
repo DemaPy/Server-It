@@ -4,6 +4,7 @@ import { prisma } from "../../db";
 import { SectionPlaceholder } from "@prisma/client";
 import { placeholderDTO } from "../../middlewares/DTOS/placeholderSectionsDTO";
 import { MIDDLEWARES } from "../../middlewares/guard";
+import { UserToken } from "../../entities/auth/controller";
 
 export const sectionPlaceholderRouter = Router();
 
@@ -13,6 +14,7 @@ sectionPlaceholderRouter.post(
   placeholderDTO,
   async (req: Request, res: Response) => {
     try {
+      const user: UserToken = req.body.user;
       const placeholder: Omit<SectionPlaceholder, "id"> = req.body.placeholder;
 
       const section = await prisma.section.findUnique({
@@ -22,6 +24,22 @@ sectionPlaceholderRouter.post(
       });
       if (!section) {
         throw new Error("Section not found.");
+      }
+
+      let isPlaceholderWithTheSamePositionExist = false;
+      const placeholders = await prisma.sectionPlaceholder.findMany({
+        where: {
+          sectionId: placeholder.sectionId,
+        },
+      });
+      placeholders.forEach((item) => {
+        if (placeholder.position === item.position) {
+          isPlaceholderWithTheSamePositionExist = true;
+        }
+      });
+
+      if (isPlaceholderWithTheSamePositionExist) {
+        throw new Error("Placeholder for this position already exist.");
       }
 
       const createdPlaceholder = await prisma.sectionPlaceholder.create({
@@ -79,21 +97,20 @@ sectionPlaceholderRouter.delete(
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const deletedCampaign = await prisma.sectionPlaceholder.delete({
+      const deletedPlaceholder = await prisma.sectionPlaceholder.delete({
         where: {
           id: id,
         },
       });
       res.send({
         status: "success",
-        message: "Campaign has been deleted.",
-        data: deletedCampaign,
+        message: "Placeholder has been deleted.",
+        data: deletedPlaceholder,
       });
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Campaign hasn't been deleted.",
-        data: { id: req.params.id },
+        message: "Placeholder hasn't been deleted.",
       });
     }
   }

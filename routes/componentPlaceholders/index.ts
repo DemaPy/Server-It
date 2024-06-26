@@ -26,6 +26,22 @@ componentPlaceholdersRouter.post(
         throw new Error("Component not found.");
       }
 
+      let isPlaceholderWithTheSamePositionExist = false;
+      const placeholders = await prisma.componentPlaceholder.findMany({
+        where: {
+          componentId: placeholder.componentId,
+        },
+      });
+      placeholders.forEach((item) => {
+        if (placeholder.position === item.position) {
+          isPlaceholderWithTheSamePositionExist = true;
+        }
+      });
+
+      if (isPlaceholderWithTheSamePositionExist) {
+        throw new Error("Placeholder for this position already exist.");
+      }
+
       const createdPlaceholder = await prisma.componentPlaceholder.create({
         data: placeholder,
       });
@@ -82,17 +98,25 @@ componentPlaceholdersRouter.delete(
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const componentId = req.body.component_id;
+
+      const placeholder = await prisma.componentPlaceholder.findUnique({
+        where: {
+          id: id,
+        },
+      });
+      if (!placeholder) {
+        throw new Error("Placeholder doesn't exist.");
+      }
 
       await prisma.componentPlaceholder.delete({
         where: {
-          id: id,
+          id: placeholder.id,
         },
       });
 
       const component = await prisma.component.findUnique({
         where: {
-          id: componentId,
+          id: placeholder.componentId,
         },
       });
       res.send({

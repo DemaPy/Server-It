@@ -7,8 +7,8 @@ export class ComponentValidation {
 
   create() {
     return [
-      check("title", "Max: 20, Min: 3 symbols").exists().notEmpty().isLength({
-        max: 20,
+      check("title", "Max: 30, Min: 3 symbols").exists().notEmpty().isLength({
+        max: 30,
         min: 3,
       }),
       check("content", "Content is not valid.")
@@ -25,12 +25,12 @@ export class ComponentValidation {
   update() {
     return [
       check("id", "Id is not valid.").exists().notEmpty().isString(),
-      check("title", "Max: 20, Min: 3 symbols")
+      check("title", "Max: 30, Min: 3 symbols")
         .exists()
         .notEmpty()
         .isString()
         .isLength({
-          max: 20,
+          max: 30,
           min: 3,
         }),
       check("content", "Content is not valid.")

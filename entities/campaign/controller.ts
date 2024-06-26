@@ -29,6 +29,7 @@ export class CampaignController implements Controller {
 
       const user: UserToken = req.body.user;
       const campaign: CreateCampaignDTO = req.body.campaign;
+      
       const template = await prisma.template.findUnique({
         where: {
           id: campaign.templateId,
@@ -310,7 +311,7 @@ export class CampaignController implements Controller {
         where: {
           userId:
             user.role === "GUEST"
-              ? "9a1b4cbd-1a07-4ab9-a287-bd421daafcbb"
+              ? "07fde4aa-1377-44db-853e-df3561429d9b"
               : user.id,
         },
       });
@@ -350,7 +351,7 @@ export class CampaignController implements Controller {
           id: id,
           userId:
             user.role === "GUEST"
-              ? "9a1b4cbd-1a07-4ab9-a287-bd421daafcbb"
+              ? "07fde4aa-1377-44db-853e-df3561429d9b"
               : user.id,
         },
         include: {

@@ -98,6 +98,11 @@ export class ComponentController implements Controller {
         data: {
           title: component.title,
           content: component.content,
+          placeholders: {
+            createMany: {
+              data: component.placeholders
+            }
+          },
           userId: user.id,
         },
       });
@@ -160,6 +165,7 @@ export class ComponentController implements Controller {
       const updatedComponent = await prisma.component.update({
         where: {
           id: component.id,
+          userId: user.id,
         },
         data: {
           title: component.title,

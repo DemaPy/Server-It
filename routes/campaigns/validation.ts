@@ -7,7 +7,7 @@ export class CampaignValidation {
 
   create() {
     return [
-      check("title", "Max: 20, Min: 3 symbols").exists().notEmpty().isString().isLength({
+      check("title", "Max: 35, Min: 3 symbols").exists().notEmpty().isString().isLength({
         max: 20,
         min: 3,
       }),
@@ -30,7 +30,7 @@ export class CampaignValidation {
   update() {
     return [
       check("id", "Id is not valid.").exists().notEmpty().isString(),
-      check("title", "Max: 20, Min: 3 symbols")
+      check("title", "Max: 35, Min: 3 symbols")
         .exists()
         .notEmpty()
         .isString()

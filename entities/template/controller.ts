@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { prisma } from "../../db";
-import { User } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { validationResult } from "express-validator";
 import {
@@ -18,7 +17,7 @@ export class TemplateController implements Controller {
         where: {
           userId:
             user.role === "GUEST"
-              ? "9a1b4cbd-1a07-4ab9-a287-bd421daafcbb"
+              ? "07fde4aa-1377-44db-853e-df3561429d9b"
               : user.id,
         },
       });
@@ -48,13 +47,13 @@ export class TemplateController implements Controller {
         });
       }
       const { id } = req.params;
-      const user = req.body.user;
+      const user: UserToken = req.body.user;
       const template = await prisma.template.findUnique({
         where: {
           id: id,
           userId:
             user.role === "GUEST"
-              ? "9a1b4cbd-1a07-4ab9-a287-bd421daafcbb"
+              ? "07fde4aa-1377-44db-853e-df3561429d9b"
               : user.id,
         },
         include: {
@@ -90,7 +89,7 @@ export class TemplateController implements Controller {
         });
       }
 
-      const user: Omit<User, "password"> = req.body.user;
+      const user: UserToken = req.body.user;
       const template: CreateTemplateDTO = req.body.template;
       const createdTemplate = await prisma.template.create({
         data: {
@@ -130,10 +129,24 @@ export class TemplateController implements Controller {
           ...errors,
         });
       }
+
+      const user: UserToken = req.body.user;
       const template: UpdateTemplateDTO = req.body.template;
+
+      const isExist = await prisma.template.findMany({
+        where: {
+          id: template.id,
+          userId: user.id,
+        },
+      });
+      if (!isExist) {
+        throw new Error("Template doesn't exist.");
+      }
+
       const updatedTemplate = await prisma.template.update({
         where: {
           id: template.id,
+          userId: user.id,
         },
         data: {
           title: template.title,
@@ -164,9 +177,12 @@ export class TemplateController implements Controller {
         });
       }
       const { id } = req.params;
+      const user: UserToken = req.body.user;
+
       const deletedTemplate = await prisma.template.delete({
         where: {
           id: id,
+          userId: user.id
         },
       });
       res.send({
