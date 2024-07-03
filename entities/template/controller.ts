@@ -58,6 +58,9 @@ export class TemplateController implements Controller {
         },
         include: {
           sections: {
+            orderBy: {
+              order: "asc"
+            },
             include: {
               placeholders: true,
             },

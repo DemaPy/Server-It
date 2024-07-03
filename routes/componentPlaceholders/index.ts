@@ -1,62 +1,46 @@
 import { Router } from "express";
 import { Request, Response } from "express";
 import { prisma } from "../../db";
-import { ComponentPlaceholder } from "@prisma/client";
 import { placeholderDTO } from "../../middlewares/DTOS/placeholdersComponentDTO";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { MIDDLEWARES } from "../../middlewares/guard";
+import {
+  CreateComponentPlaceholderDTO,
+  UpdateComponentPlaceholderDTO,
+} from "./dto";
 
 export const componentPlaceholdersRouter = Router();
 
 componentPlaceholdersRouter.post(
   "/",
   MIDDLEWARES.user,
-  placeholderDTO,
+  placeholderDTO(CreateComponentPlaceholderDTO),
   async (req: Request, res: Response) => {
     try {
-      const placeholder: Omit<ComponentPlaceholder, "id"> =
+      const { placeholders }: CreateComponentPlaceholderDTO =
         req.body.placeholder;
-
       const component = await prisma.component.findUnique({
         where: {
-          id: placeholder.componentId,
+          id: placeholders[0].componentId,
         },
       });
       if (!component) {
         throw new Error("Component not found.");
       }
 
-      let isPlaceholderWithTheSamePositionExist = false;
-      const placeholders = await prisma.componentPlaceholder.findMany({
-        where: {
-          componentId: placeholder.componentId,
-        },
-      });
-      placeholders.forEach((item) => {
-        if (placeholder.position === item.position) {
-          isPlaceholderWithTheSamePositionExist = true;
-        }
-      });
-
-      if (isPlaceholderWithTheSamePositionExist) {
-        throw new Error("Placeholder for this position already exist.");
-      }
-
-      const createdPlaceholder = await prisma.componentPlaceholder.create({
-        data: placeholder,
+      const count = await prisma.componentPlaceholder.createMany({
+        data: placeholders,
       });
 
       res.send({
         status: "success",
-        message: "Placeholder has been created.",
-        data: createdPlaceholder,
+        message: "Placeholders has been created.",
+        data: placeholders,
       });
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Placeholder hasn't been created.",
-        error: error.message,
-        data: req.body.placeholder,
+        message: error.message || "Placeholders hasn't been created.",
       });
     }
   }
@@ -65,10 +49,10 @@ componentPlaceholdersRouter.post(
 componentPlaceholdersRouter.patch(
   "/",
   MIDDLEWARES.user,
-  placeholderDTO,
+  placeholderDTO(UpdateComponentPlaceholderDTO),
   async (req: Request, res: Response) => {
     try {
-      const placeholder: ComponentPlaceholder = req.body.placeholder;
+      const placeholder: UpdateComponentPlaceholderDTO = req.body.placeholder;
       const updatedPlaceholder = await prisma.componentPlaceholder.update({
         where: {
           id: placeholder.id,
@@ -98,7 +82,6 @@ componentPlaceholdersRouter.delete(
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-
       const placeholder = await prisma.componentPlaceholder.findUnique({
         where: {
           id: id,

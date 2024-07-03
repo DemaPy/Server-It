@@ -66,6 +66,7 @@ model Section {
   title        String
   content      String
   templateId   String
+  order        Int
   Layout       Layout[]
   template     Template             @relation(fields: [templateId], references: [id], onDelete: Cascade)
   placeholders SectionPlaceholder[]
@@ -88,7 +89,6 @@ model Component {
 model ComponentPlaceholder {
   id          String    @id @default(uuid())
   title       String
-  position    Int
   fallback    String
   componentId String
   component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
@@ -100,7 +100,6 @@ model ComponentPlaceholder {
 model SectionPlaceholder {
   id        String  @id @default(uuid())
   title     String
-  position  Int
   fallback  String
   sectionId String
   section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)

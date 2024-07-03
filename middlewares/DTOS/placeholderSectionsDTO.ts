@@ -1,14 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import { SectionPlaceholderDTO } from "../../routes/sectionPlaceholders/dto";
 
-export const placeholderDTO = (
+export const placeholderDTO = (DTO) => (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const placeholder = SectionPlaceholderDTO.extractFields(req.body);
-    
+    const placeholder = new DTO(req.body);
     req.body.placeholder = placeholder;
     next();
   } catch (error) {

@@ -10,6 +10,7 @@ import {
 } from "@prisma/client/runtime/library";
 import { validationResult } from "express-validator";
 import { CreateSectionDTO, UpdateSectionDTO } from "../../routes/sections/dto";
+import { encode } from "html-entities";
 
 export class SectionController implements Controller {
   async delete(
@@ -110,6 +111,9 @@ export class SectionController implements Controller {
           id: section.templateId,
           userId: user.id,
         },
+        include: {
+          sections: true
+        }
       });
       if (!template) {
         throw new Error("Template doesn't exist for this section.");
@@ -120,13 +124,13 @@ export class SectionController implements Controller {
         createdSection = await prisma.section.create({
           data: {
             title: section.title,
-            content: section.content,
+            content: encode(section.content),
             templateId: section.templateId,
+            order: template.sections.length <= 1 ? template.sections.length : template.sections.length - 1,
             placeholders: {
               createMany: {
                 data: placeholders.map((item) => ({
                   fallback: item.fallback,
-                  position: item.position,
                   title: item.title,
                 })),
               },
@@ -137,8 +141,9 @@ export class SectionController implements Controller {
         createdSection = await prisma.section.create({
           data: {
             title: section.title,
-            content: section.content,
+            content: encode(section.content),
             templateId: section.templateId,
+            order: template.sections.length <= 1 ? template.sections.length : template.sections.length - 1,
           },
         });
       }
@@ -238,37 +243,6 @@ export class SectionController implements Controller {
         throw new Error("Section not found.");
       }
 
-      const shifting = section.content.length - isSectionExist.content.length;
-      if (Math.abs(shifting) > 0) {
-        for (const item of isSectionExist.placeholders) {
-          await prisma.sectionPlaceholder.delete({
-            where: {
-              id: item.id,
-            },
-          });
-        }
-        const campaigns = await prisma.campaign.findMany({
-          where: {
-            templateId: {
-              equals: section.templateId,
-            },
-          },
-        });
-  
-        if (campaigns) {
-
-          const newCampaigns = campaigns.map((campaign) => {
-            for (const item of isSectionExist.placeholders) {
-              delete campaign.data[section.id][item.id]
-            }
-            return campaign;
-          });
-          for (const campaign of newCampaigns) {
-            await prisma.campaign.update({ where: { id: campaign.id }, data: campaign });
-          }
-        }
-      }
-
       const updatedSection = await prisma.section.update({
         where: {
           id: section.id,
@@ -276,6 +250,11 @@ export class SectionController implements Controller {
         data: {
           title: section.title,
           content: section.content,
+          placeholders: {
+            createMany: {
+              data: section.placeholders
+            }
+          }
         },
         include: {
           placeholders: true,
@@ -365,6 +344,7 @@ export class SectionController implements Controller {
           title: sectionToDuplicate.title + " copy",
           content: sectionToDuplicate.content,
           templateId: sectionToDuplicate.templateId,
+          order: template.sections.length,
         },
       });
       if (sectionToDuplicate.placeholders) {

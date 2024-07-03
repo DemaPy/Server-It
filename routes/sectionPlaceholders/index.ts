@@ -5,56 +5,40 @@ import { SectionPlaceholder } from "@prisma/client";
 import { placeholderDTO } from "../../middlewares/DTOS/placeholderSectionsDTO";
 import { MIDDLEWARES } from "../../middlewares/guard";
 import { UserToken } from "../../entities/auth/controller";
+import { CreateSectionPlaceholderDTO, UpdateSectionPlaceholderDTO } from "./dto";
 
 export const sectionPlaceholderRouter = Router();
 
 sectionPlaceholderRouter.post(
   "/",
   MIDDLEWARES.user,
-  placeholderDTO,
+  placeholderDTO(CreateSectionPlaceholderDTO),
   async (req: Request, res: Response) => {
     try {
       const user: UserToken = req.body.user;
-      const placeholder: Omit<SectionPlaceholder, "id"> = req.body.placeholder;
+      const {placeholders}: CreateSectionPlaceholderDTO = req.body.placeholder;
 
       const section = await prisma.section.findUnique({
         where: {
-          id: placeholder.sectionId,
+          id: placeholders[0].sectionId,
         },
       });
       if (!section) {
         throw new Error("Section not found.");
       }
-
-      let isPlaceholderWithTheSamePositionExist = false;
-      const placeholders = await prisma.sectionPlaceholder.findMany({
-        where: {
-          sectionId: placeholder.sectionId,
-        },
-      });
-      placeholders.forEach((item) => {
-        if (placeholder.position === item.position) {
-          isPlaceholderWithTheSamePositionExist = true;
-        }
-      });
-
-      if (isPlaceholderWithTheSamePositionExist) {
-        throw new Error("Placeholder for this position already exist.");
-      }
-
-      const createdPlaceholder = await prisma.sectionPlaceholder.create({
-        data: placeholder,
+      
+      const count = await prisma.sectionPlaceholder.createMany({
+        data: placeholders,
       });
       res.send({
         status: "success",
-        message: "Placeholder has been created.",
-        data: createdPlaceholder,
+        message: "Placeholders has been created.",
+        data: placeholders,
       });
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Placeholder hasn't been created.",
-        data: req.body.placeholder,
+        message: "Placeholders hasn't been created.",
         error: error.message,
       });
     }
@@ -64,10 +48,10 @@ sectionPlaceholderRouter.post(
 sectionPlaceholderRouter.patch(
   "/",
   MIDDLEWARES.user,
-  placeholderDTO,
+  placeholderDTO(UpdateSectionPlaceholderDTO),
   async (req: Request, res: Response) => {
     try {
-      const placeholder: SectionPlaceholder = req.body.placeholder;
+      const placeholder: UpdateSectionPlaceholderDTO = req.body.placeholder;
       const updatedPlaceholder = await prisma.sectionPlaceholder.update({
         where: {
           id: placeholder.id,

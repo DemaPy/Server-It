@@ -9,6 +9,7 @@ import {
 } from "../../routes/components/dto";
 import { validationResult } from "express-validator";
 import { User } from "@prisma/client";
+import { encode } from "html-entities";
 
 export class ComponentController implements Controller {
   async getAll(req: Request, res: Response) {
@@ -94,18 +95,30 @@ export class ComponentController implements Controller {
       }
       const user: User = req.body.user;
       const component: CreateComponentDTO = req.body.component;
-      const createdComponent = await prisma.component.create({
-        data: {
-          title: component.title,
-          content: component.content,
-          placeholders: {
-            createMany: {
-              data: component.placeholders
-            }
+      let createdComponent;
+      if (component.placeholders) {
+        createdComponent = await prisma.component.create({
+          data: {
+            title: component.title,
+            content: encode(component.content),
+            placeholders: {
+              createMany: {
+                data: component.placeholders,
+              },
+            },
+            userId: user.id,
           },
-          userId: user.id,
-        },
-      });
+        });
+      } else {
+        createdComponent = await prisma.component.create({
+          data: {
+            title: component.title,
+            content: encode(component.content),
+            userId: user.id,
+          },
+        });
+      }
+
       res.send({
         status: "success",
         message: "Component has been created.",
@@ -150,18 +163,6 @@ export class ComponentController implements Controller {
         throw new Error("Component not found.");
       }
 
-      const shifting =
-        component.content.length - isComponentExist.content.length;
-      if (Math.abs(shifting) > 0) {
-        for (const item of isComponentExist.placeholders) {
-          await prisma.componentPlaceholder.delete({
-            where: {
-              id: item.id,
-            },
-          });
-        }
-      }
-
       const updatedComponent = await prisma.component.update({
         where: {
           id: component.id,
@@ -170,6 +171,11 @@ export class ComponentController implements Controller {
         data: {
           title: component.title,
           content: component.content,
+          placeholders: {
+            createMany: {
+              data: component.placeholders
+            }
+          }
         },
         include: {
           placeholders: true,

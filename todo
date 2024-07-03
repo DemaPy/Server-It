@@ -1,3 +1,1 @@
 what todo if 1 request to DB failed (duplicate section)
-optimize way of uploading CSV data 1 button for adding data instead of for every single placeholder
-handle responses in client side: error, token expired etc.
