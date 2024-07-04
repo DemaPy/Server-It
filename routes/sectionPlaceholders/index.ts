@@ -5,7 +5,10 @@ import { SectionPlaceholder } from "@prisma/client";
 import { placeholderDTO } from "../../middlewares/DTOS/placeholderSectionsDTO";
 import { MIDDLEWARES } from "../../middlewares/guard";
 import { UserToken } from "../../entities/auth/controller";
-import { CreateSectionPlaceholderDTO, UpdateSectionPlaceholderDTO } from "./dto";
+import {
+  CreateSectionPlaceholderDTO,
+  UpdateSectionPlaceholderDTO,
+} from "./dto";
 
 export const sectionPlaceholderRouter = Router();
 
@@ -16,7 +19,8 @@ sectionPlaceholderRouter.post(
   async (req: Request, res: Response) => {
     try {
       const user: UserToken = req.body.user;
-      const {placeholders}: CreateSectionPlaceholderDTO = req.body.placeholder;
+      const { placeholders }: CreateSectionPlaceholderDTO =
+        req.body.placeholder;
 
       const section = await prisma.section.findUnique({
         where: {
@@ -26,7 +30,7 @@ sectionPlaceholderRouter.post(
       if (!section) {
         throw new Error("Section not found.");
       }
-      
+
       const count = await prisma.sectionPlaceholder.createMany({
         data: placeholders,
       });
@@ -52,12 +56,23 @@ sectionPlaceholderRouter.patch(
   async (req: Request, res: Response) => {
     try {
       const placeholder: UpdateSectionPlaceholderDTO = req.body.placeholder;
+      const toUpdate = await prisma.sectionPlaceholder.findUnique({
+        where: {
+          id: placeholder.id,
+        },
+      });
+
+      if (!toUpdate) {
+        throw new Error("Placeholder to update not found");
+      }
+
       const updatedPlaceholder = await prisma.sectionPlaceholder.update({
         where: {
           id: placeholder.id,
         },
         data: {
           title: placeholder.title,
+          fallback: placeholder.fallback,
         },
       });
       res.send({
@@ -68,8 +83,7 @@ sectionPlaceholderRouter.patch(
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Placeholder hasn't been updated.",
-        data: req.body.placeholder,
+        message: error?.message || "Placeholder hasn't been updated.",
       });
     }
   }

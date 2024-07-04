@@ -53,12 +53,22 @@ componentPlaceholdersRouter.patch(
   async (req: Request, res: Response) => {
     try {
       const placeholder: UpdateComponentPlaceholderDTO = req.body.placeholder;
+      const toUpdate = await prisma.componentPlaceholder.findUnique({
+        where: {
+          id: placeholder.id,
+        },
+      });
+
+      if (!toUpdate) {
+        throw new Error("Placeholder to update not found");
+      }
       const updatedPlaceholder = await prisma.componentPlaceholder.update({
         where: {
           id: placeholder.id,
         },
         data: {
           title: placeholder.title,
+          fallback: placeholder.fallback,
         },
       });
       res.send({

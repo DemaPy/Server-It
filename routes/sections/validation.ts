@@ -2,9 +2,11 @@ import { check, param } from "express-validator";
 
 export class SectionValidation {
   get() {
-    return [param("id", "Id is not valid.").exists().notEmpty().isString().isLength({
-      min: 5,
-    })];
+    return [
+      param("id", "Id is not valid.").exists().notEmpty().isString().isLength({
+        min: 5,
+      }),
+    ];
   }
 
   create() {
@@ -22,6 +24,25 @@ export class SectionValidation {
         min: 3,
       }),
       check("templateId", "Template id is not valid.")
+        .exists()
+        .notEmpty()
+        .isLength({
+          min: 3,
+        })
+        .isString(),
+    ];
+  }
+
+  createFromComponent() {
+    return [
+      check("templateId", "Template id is not valid.")
+        .exists()
+        .notEmpty()
+        .isLength({
+          min: 3,
+        })
+        .isString(),
+      check("componentId", "Content id is not valid.")
         .exists()
         .notEmpty()
         .isLength({
@@ -62,8 +83,10 @@ export class SectionValidation {
   }
 
   delete() {
-    return [param("id", "Id is not valid.").exists().notEmpty().isString().isLength({
-      min: 5,
-    })];
+    return [
+      param("id", "Id is not valid.").exists().notEmpty().isString().isLength({
+        min: 5,
+      }),
+    ];
   }
 }

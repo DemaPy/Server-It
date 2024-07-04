@@ -1,4 +1,4 @@
-import { Section, SectionPlaceholder } from "@prisma/client";
+import { Component, Section, SectionPlaceholder, Template } from "@prisma/client";
 
 export class CreateSectionDTO {
   content: Section['content']
@@ -8,6 +8,15 @@ export class CreateSectionDTO {
     this.title = data.title
     this.templateId = data.templateId
     this.content = data.content
+  }
+}
+
+export class CreateSectionFromComponentDTO {
+  templateId: Template["id"];
+  componentId: Component["id"];
+  constructor(data: any) {
+    this.componentId = data.componentId
+    this.templateId = data.templateId
   }
 }
 

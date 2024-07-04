@@ -3,13 +3,22 @@ import { ParamsDictionary } from "express-serve-static-core";
 import { ParsedQs } from "qs";
 import { Controller } from "../type";
 import { prisma } from "../../db";
-import { ComponentPlaceholder, Section, User } from "@prisma/client";
+import {
+  ComponentPlaceholder,
+  Section,
+  SectionPlaceholder,
+  User,
+} from "@prisma/client";
 import {
   PrismaClientKnownRequestError,
   PrismaClientValidationError,
 } from "@prisma/client/runtime/library";
 import { validationResult } from "express-validator";
-import { CreateSectionDTO, UpdateSectionDTO } from "../../routes/sections/dto";
+import {
+  CreateSectionDTO,
+  CreateSectionFromComponentDTO,
+  UpdateSectionDTO,
+} from "../../routes/sections/dto";
 import { encode } from "html-entities";
 
 export class SectionController implements Controller {
@@ -105,48 +114,31 @@ export class SectionController implements Controller {
 
       const user: User = req.body.user;
       const section: CreateSectionDTO = req.body.section;
-      const placeholders: ComponentPlaceholder[] = req.body.placeholders;
+      const placeholders: SectionPlaceholder[] = req.body.placeholders;
       const template = await prisma.template.findUnique({
         where: {
           id: section.templateId,
           userId: user.id,
         },
         include: {
-          sections: true
-        }
+          sections: true,
+        },
       });
       if (!template) {
         throw new Error("Template doesn't exist for this section.");
       }
 
-      let createdSection;
-      if (placeholders) {
-        createdSection = await prisma.section.create({
-          data: {
-            title: section.title,
-            content: encode(section.content),
-            templateId: section.templateId,
-            order: template.sections.length <= 1 ? template.sections.length : template.sections.length - 1,
-            placeholders: {
-              createMany: {
-                data: placeholders.map((item) => ({
-                  fallback: item.fallback,
-                  title: item.title,
-                })),
-              },
-            },
-          },
-        });
-      } else {
-        createdSection = await prisma.section.create({
-          data: {
-            title: section.title,
-            content: encode(section.content),
-            templateId: section.templateId,
-            order: template.sections.length <= 1 ? template.sections.length : template.sections.length - 1,
-          },
-        });
-      }
+      let createdSection = await prisma.section.create({
+        data: {
+          title: section.title,
+          content: encode(section.content),
+          templateId: section.templateId,
+          order:
+            template.sections.length <= 1
+              ? template.sections.length
+              : template.sections.length - 1,
+        },
+      });
 
       const campaigns = await prisma.campaign.findMany({
         where: {
@@ -191,6 +183,117 @@ export class SectionController implements Controller {
         message: "Section hasn't been created.",
         data: req.body.section,
         error: error.message,
+      });
+    }
+  }
+
+  async createFromComponent(
+    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
+    res: Response<any, Record<string, any>>
+  ) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
+      }
+
+      const user: User = req.body.user;
+      const section: CreateSectionFromComponentDTO = req.body.section;
+
+      const template = await prisma.template.findUnique({
+        where: {
+          id: section.templateId,
+          userId: user.id,
+        },
+        include: {
+          sections: true,
+        },
+      });
+      if (!template) {
+        throw new Error("Template doesn't exist.");
+      }
+
+      const component = await prisma.component.findUnique({
+        where: {
+          id: section.componentId,
+          userId: user.id,
+        },
+        include: {
+          placeholders: true,
+        },
+      });
+      if (!component) {
+        throw new Error("Component doesn't exist.");
+      }
+
+      let createdSection = await prisma.section.create({
+        data: {
+          title: "Copied: " + component.title,
+          content: component.content,
+          templateId: section.templateId,
+          order:
+            template.sections.length <= 1
+              ? template.sections.length
+              : template.sections.length - 1,
+          placeholders: {
+            createMany: {
+              data: component.placeholders.map((item) => {
+                return {
+                  id: item.id,
+                  fallback: item.fallback,
+                  title: item.title,
+                };
+              }),
+            },
+          },
+        },
+      });
+
+      const campaigns = await prisma.campaign.findMany({
+        where: {
+          templateId: template.id,
+        },
+        include: {
+          layout: true,
+        },
+      });
+      if (campaigns.length > 0) {
+        const updatedLayouts = campaigns.map((item) => {
+          return {
+            sectionId: createdSection.id,
+            order: item.layout.length,
+            campaignId: item.id,
+            is_active: true,
+            renderOn: {},
+          };
+        });
+
+        await prisma.layout.createMany({
+          data: updatedLayouts,
+        });
+      }
+
+      res.send({
+        status: "success",
+        message: "Section has been created.",
+        data: createdSection,
+      });
+    } catch (error) {
+      console.log(error);
+
+      if (error instanceof PrismaClientValidationError) {
+        return res.status(400).send({
+          status: "error",
+          message: error.message,
+        });
+      }
+      res.status(400).send({
+        status: "error",
+        message: error.message || "Section hasn't been created.",
       });
     }
   }
@@ -252,9 +355,9 @@ export class SectionController implements Controller {
           content: section.content,
           placeholders: {
             createMany: {
-              data: section.placeholders
-            }
-          }
+              data: section.placeholders,
+            },
+          },
         },
         include: {
           placeholders: true,
