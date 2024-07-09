@@ -20,6 +20,7 @@ import {
   UpdateSectionDTO,
 } from "../../routes/sections/dto";
 import { encode } from "html-entities";
+import jsdom from "jsdom";
 
 export class SectionController implements Controller {
   async delete(
@@ -243,13 +244,35 @@ export class SectionController implements Controller {
             createMany: {
               data: component.placeholders.map((item) => {
                 return {
-                  id: item.id,
                   fallback: item.fallback,
                   title: item.title,
                 };
               }),
             },
           },
+        },
+        include: {
+          placeholders: true,
+        },
+      });
+
+      const dom = new jsdom.JSDOM(component.content);
+      const body = dom.window.document.body;
+      
+      const placeholders = body.querySelectorAll("[data-template-it_id]");
+      for (let index = 0; index < createdSection.placeholders.length; index++) {
+        const sec_placeholder = createdSection.placeholders[index];
+        placeholders[index].setAttribute(
+          "data-template-it_id",
+          sec_placeholder.id
+        );
+      }
+      const sectionWithNewContentPlaceholders = await prisma.section.update({
+        where: {
+          id: createdSection.id,
+        },
+        data: {
+          content: body.innerHTML,
         },
       });
 
@@ -280,7 +303,7 @@ export class SectionController implements Controller {
       res.send({
         status: "success",
         message: "Section has been created.",
-        data: createdSection,
+        data: sectionWithNewContentPlaceholders,
       });
     } catch (error) {
       console.log(error);
@@ -353,11 +376,6 @@ export class SectionController implements Controller {
         data: {
           title: section.title,
           content: section.content,
-          placeholders: {
-            createMany: {
-              data: section.placeholders,
-            },
-          },
         },
         include: {
           placeholders: true,
