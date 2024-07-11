@@ -13,14 +13,17 @@ export class TemplateController implements Controller {
   async getAll(req: Request, res: Response) {
     try {
       const user: UserToken = req.body.user;
-      const templates = await prisma.template.findMany({
-        where: {
-          userId:
-            user.role === "GUEST"
-              ? "07fde4aa-1377-44db-853e-df3561429d9b"
-              : user.id,
-        },
-      });
+      const isManager = user.role === "PROJECT_MANAGER";
+      let templates;
+      if (isManager) {
+        templates = await prisma.template.findMany();
+      } else {
+        templates = await prisma.template.findMany({
+          where: {
+            userId: user.id,
+          },
+        });
+      }
       res.send({
         status: "success",
         message: "",
@@ -59,7 +62,7 @@ export class TemplateController implements Controller {
         include: {
           sections: {
             orderBy: {
-              order: "asc"
+              order: "asc",
             },
             include: {
               placeholders: true,
@@ -185,7 +188,7 @@ export class TemplateController implements Controller {
       const deletedTemplate = await prisma.template.delete({
         where: {
           id: id,
-          userId: user.id
+          userId: user.id,
         },
       });
       res.send({

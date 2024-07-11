@@ -69,9 +69,7 @@ export class AuthController {
         .status(400)
         .json({
           status: "error",
-          error: "An error occurred",
-          message: error.message,
-          code: 404,
+          message: error.message || "An error occurred",
         });
     }
   }
@@ -124,8 +122,6 @@ export class AuthController {
         .status(200)
         .json({ data: "Blocked to register new user.", status: "success" });
     } catch (error) {
-      console.log(error);
-      
       return res.status(400).json({ status: "error", message: error.message });
     }
   }
