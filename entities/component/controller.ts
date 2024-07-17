@@ -95,29 +95,13 @@ export class ComponentController implements Controller {
       }
       const user: User = req.body.user;
       const component: CreateComponentDTO = req.body.component;
-      let createdComponent;
-      if (component.placeholders) {
-        createdComponent = await prisma.component.create({
-          data: {
-            title: component.title,
-            content: encode(component.content),
-            placeholders: {
-              createMany: {
-                data: component.placeholders,
-              },
-            },
-            userId: user.id,
-          },
-        });
-      } else {
-        createdComponent = await prisma.component.create({
-          data: {
-            title: component.title,
-            content: encode(component.content),
-            userId: user.id,
-          },
-        });
-      }
+      let createdComponent = await prisma.component.create({
+        data: {
+          title: component.title,
+          content: encode(component.content),
+          userId: user.id,
+        },
+      });
 
       res.send({
         status: "success",
@@ -173,9 +157,9 @@ export class ComponentController implements Controller {
           content: component.content,
           placeholders: {
             createMany: {
-              data: component.placeholders
-            }
-          }
+              data: component.placeholders,
+            },
+          },
         },
         include: {
           placeholders: true,

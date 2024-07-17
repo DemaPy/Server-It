@@ -3,12 +3,7 @@ import { ParamsDictionary } from "express-serve-static-core";
 import { ParsedQs } from "qs";
 import { Controller } from "../type";
 import { prisma } from "../../db";
-import {
-  ComponentPlaceholder,
-  Section,
-  SectionPlaceholder,
-  User,
-} from "@prisma/client";
+import { User } from "@prisma/client";
 import {
   PrismaClientKnownRequestError,
   PrismaClientValidationError,
@@ -20,6 +15,7 @@ import {
   UpdateSectionDTO,
 } from "../../routes/sections/dto";
 import { encode } from "html-entities";
+import { isTemplateExist } from "../../utils/helper";
 
 export class SectionController implements Controller {
   async delete(
@@ -37,26 +33,6 @@ export class SectionController implements Controller {
       }
       const { id } = req.params;
       const user: User = req.body.user;
-
-      const templates = await prisma.template.findMany({
-        where: {
-          userId: user.id,
-        },
-        include: {
-          sections: true,
-        },
-      });
-      let isHaveAccessToDelete = false;
-      templates.forEach((item) => {
-        for (const section of item.sections) {
-          if (section.id === id) {
-            isHaveAccessToDelete = true;
-          }
-        }
-      });
-      if (!isHaveAccessToDelete) {
-        throw new Error("Section you are trying to delete doesn't exist.");
-      }
 
       const deletedSection = await prisma.section.delete({
         where: {
@@ -89,11 +65,9 @@ export class SectionController implements Controller {
       });
     } catch (error) {
       console.log(error);
-
       res.status(400).send({
         status: "error",
         message: error.message,
-        data: { id: req.params.id },
       });
     }
   }
@@ -114,19 +88,14 @@ export class SectionController implements Controller {
 
       const user: User = req.body.user;
       const section: CreateSectionDTO = req.body.section;
-      const placeholders: SectionPlaceholder[] = req.body.placeholders;
-      const template = await prisma.template.findUnique({
-        where: {
-          id: section.templateId,
-          userId: user.id,
-        },
+
+      const template = await isTemplateExist({
+        templatId: section.templateId,
+        userId: user.id,
         include: {
           sections: true,
         },
       });
-      if (!template) {
-        throw new Error("Template doesn't exist for this section.");
-      }
 
       let createdSection = await prisma.section.create({
         data: {
@@ -204,18 +173,13 @@ export class SectionController implements Controller {
       const user: User = req.body.user;
       const section: CreateSectionFromComponentDTO = req.body.section;
 
-      const template = await prisma.template.findUnique({
-        where: {
-          id: section.templateId,
-          userId: user.id,
-        },
+      const template = await isTemplateExist({
+        templatId: section.templateId,
+        userId: user.id,
         include: {
           sections: true,
         },
       });
-      if (!template) {
-        throw new Error("Template doesn't exist.");
-      }
 
       const component = await prisma.component.findUnique({
         where: {
@@ -324,15 +288,10 @@ export class SectionController implements Controller {
       const user: User = req.body.user;
       const section: UpdateSectionDTO = req.body.section;
 
-      const template = await prisma.template.findMany({
-        where: {
-          id: section.templateId,
-          userId: user.id,
-        },
+      await isTemplateExist({
+        templatId: section.templateId,
+        userId: user.id,
       });
-      if (!template) {
-        throw new Error("Template doesn't exist for this section.");
-      }
 
       const isSectionExist = await prisma.section.findUnique({
         where: {
@@ -394,28 +353,6 @@ export class SectionController implements Controller {
       }
       const { id } = req.params;
       const user: User = req.body.user;
-
-      const templates = await prisma.template.findMany({
-        where: {
-          userId: user.id,
-        },
-        include: {
-          sections: true,
-        },
-      });
-      let isHaveAccessToDuplicate = false;
-      templates.forEach((item) => {
-        for (const section of item.sections) {
-          if (section.id === id) {
-            isHaveAccessToDuplicate = true;
-          }
-        }
-      });
-      if (!isHaveAccessToDuplicate) {
-        throw new Error(
-          "Section you are trying to duplicate doesn't exist for this template."
-        );
-      }
 
       const sectionToDuplicate = await prisma.section.findUnique({
         where: {

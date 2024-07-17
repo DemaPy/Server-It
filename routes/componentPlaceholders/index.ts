@@ -8,6 +8,8 @@ import {
   CreateComponentPlaceholderDTO,
   UpdateComponentPlaceholderDTO,
 } from "./dto";
+import { decode, encode } from "html-entities";
+import jsdom from "jsdom";
 
 export const componentPlaceholdersRouter = Router();
 
@@ -35,7 +37,7 @@ componentPlaceholdersRouter.post(
       res.send({
         status: "success",
         message: "Placeholders has been created.",
-        data: placeholders,
+        data: placeholders[0].componentId,
       });
     } catch (error) {
       res.status(400).send({
@@ -62,6 +64,7 @@ componentPlaceholdersRouter.patch(
       if (!toUpdate) {
         throw new Error("Placeholder to update not found");
       }
+
       const updatedPlaceholder = await prisma.componentPlaceholder.update({
         where: {
           id: placeholder.id,
@@ -101,21 +104,38 @@ componentPlaceholdersRouter.delete(
         throw new Error("Placeholder doesn't exist.");
       }
 
-      await prisma.componentPlaceholder.delete({
-        where: {
-          id: placeholder.id,
-        },
-      });
-
       const component = await prisma.component.findUnique({
         where: {
           id: placeholder.componentId,
         },
       });
+      const content = decode(component.content);
+      const dom = new jsdom.JSDOM(content);
+      const body = dom.window.document.body;
+
+      const placeholder_to_delete = body.querySelector(
+        `[data-template-it_id='${placeholder.id}']`
+      );
+      placeholder_to_delete.remove();
+      const new_content = encode(body.innerHTML);
+
+      await prisma.component.update({
+        where: {
+          id: component.id,
+        },
+        data: {
+          content: decode(new_content),
+        },
+      });
+
+      await prisma.componentPlaceholder.delete({
+        where: {
+          id: placeholder.id,
+        },
+      });
       res.send({
         status: "success",
         message: "Placeholder has been deleted.",
-        data: component,
       });
     } catch (error) {
       console.log(error);
