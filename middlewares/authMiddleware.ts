@@ -6,6 +6,9 @@ export const authMiddleware = (req, res, next) => {
   }
 
   try {
+    if (!("authorization" in req.headers)) {
+      throw new Error("Token not found.");
+    }
     const token = req.headers.authorization.split(" ")[1];
     if (!token) {
       throw new Error("Token not found.");
@@ -18,11 +21,11 @@ export const authMiddleware = (req, res, next) => {
     if (error instanceof TokenExpiredError) {
       return res
       .status(401)
-      .json({ status: "error", message: "Token expired.", code: 401 });
+      .json({ status: "error", message: "Token expired." });
     }
     
     return res
       .status(403)
-      .json({ status: "error", message: error.message, code: 401 });
+      .json({ status: "error", message: error.message });
   }
 };

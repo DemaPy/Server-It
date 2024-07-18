@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { Request, Response } from "express";
 import { prisma } from "../../db";
-import { SectionPlaceholder } from "@prisma/client";
 import { placeholderDTO } from "../../middlewares/DTOS/placeholderSectionsDTO";
 import { MIDDLEWARES } from "../../middlewares/guard";
 import { UserToken } from "../../entities/auth/controller";
@@ -9,6 +8,8 @@ import {
   CreateSectionPlaceholderDTO,
   UpdateSectionPlaceholderDTO,
 } from "./dto";
+import { decode, encode } from "html-entities";
+import jsdom from "jsdom";
 
 export const sectionPlaceholderRouter = Router();
 
@@ -95,15 +96,48 @@ sectionPlaceholderRouter.delete(
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const deletedPlaceholder = await prisma.sectionPlaceholder.delete({
+      const placeholder = await prisma.sectionPlaceholder.findUnique({
         where: {
           id: id,
         },
       });
+      if (!placeholder) {
+        throw new Error("Placeholder doesn't exist.");
+      }
+
+      const section = await prisma.section.findUnique({
+        where: {
+          id: placeholder.sectionId,
+        },
+      });
+
+      const dom = new jsdom.JSDOM(section.content);
+      const body = dom.window.document.body;
+
+      const placeholder_to_delete = body.querySelector(
+        `[data-template-it_id='${placeholder.id}']`
+      );
+      placeholder_to_delete.remove();
+      const new_content = body.innerHTML
+
+      await prisma.section.update({
+        where: {
+          id: section.id,
+        },
+        data: {
+          content: decode(new_content),
+        },
+      });
+
+      await prisma.sectionPlaceholder.delete({
+        where: {
+          id: id,
+        },
+      });
+
       res.send({
         status: "success",
         message: "Placeholder has been deleted.",
-        data: deletedPlaceholder,
       });
     } catch (error) {
       res.status(400).send({

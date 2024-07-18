@@ -14,8 +14,10 @@ import {
   CreateSectionFromComponentDTO,
   UpdateSectionDTO,
 } from "../../routes/sections/dto";
-import { encode } from "html-entities";
+import { decode, encode } from "html-entities";
 import { isTemplateExist } from "../../utils/helper";
+import { v4 as uuidv4 } from "uuid";
+import jsdom from "jsdom";
 
 export class SectionController implements Controller {
   async delete(
@@ -194,10 +196,29 @@ export class SectionController implements Controller {
         throw new Error("Component doesn't exist.");
       }
 
+      // generate placeholders with new id,
+      // update placeholder id in content
+      const dom = new jsdom.JSDOM(component.content);
+      const body = dom.window.document.body;
+      
+      const section_placeholders = component.placeholders.map((item) => {
+        const id = uuidv4();
+        const placeholder_to_change = body.querySelector(
+          `[data-template-it_id='${item.id}']`
+        );
+        placeholder_to_change.setAttribute("data-template-it_id", id);
+        return {
+          id: id,
+          fallback: item.fallback,
+          title: item.title,
+        };
+      });
+      const new_content = body.innerHTML
+
       let createdSection = await prisma.section.create({
         data: {
           title: "Copied: " + component.title,
-          content: component.content,
+          content: new_content,
           templateId: section.templateId,
           order:
             template.sections.length <= 1
@@ -205,13 +226,7 @@ export class SectionController implements Controller {
               : template.sections.length - 1,
           placeholders: {
             createMany: {
-              data: component.placeholders.map((item) => {
-                return {
-                  id: item.id,
-                  fallback: item.fallback,
-                  title: item.title,
-                };
-              }),
+              data: section_placeholders,
             },
           },
         },

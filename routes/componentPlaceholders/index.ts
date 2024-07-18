@@ -109,15 +109,14 @@ componentPlaceholdersRouter.delete(
           id: placeholder.componentId,
         },
       });
-      const content = decode(component.content);
-      const dom = new jsdom.JSDOM(content);
+      const dom = new jsdom.JSDOM(component.content);
       const body = dom.window.document.body;
 
       const placeholder_to_delete = body.querySelector(
         `[data-template-it_id='${placeholder.id}']`
       );
       placeholder_to_delete.remove();
-      const new_content = encode(body.innerHTML);
+      const new_content = body.innerHTML
 
       await prisma.component.update({
         where: {
