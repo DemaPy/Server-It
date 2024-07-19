@@ -31,7 +31,7 @@ export class ComponentController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Something went wrong",
+        message: error.message || "Something went wrong",
         error: error,
         data: null,
       });
@@ -74,8 +74,7 @@ export class ComponentController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Something went wrong",
-        data: null,
+        message: error.message || "Something went wrong",
       });
     }
   }
@@ -111,8 +110,7 @@ export class ComponentController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Component hasn't been created.",
-        data: req.body.component,
+        message: error.message ||"Component hasn't been created.",
       });
     }
   }
@@ -147,7 +145,7 @@ export class ComponentController implements Controller {
         throw new Error("Component not found.");
       }
 
-      const updatedComponent = await prisma.component.update({
+      await prisma.component.update({
         where: {
           id: component.id,
           userId: user.id,
@@ -155,11 +153,6 @@ export class ComponentController implements Controller {
         data: {
           title: component.title,
           content: component.content,
-          placeholders: {
-            createMany: {
-              data: component.placeholders,
-            },
-          },
         },
         include: {
           placeholders: true,
@@ -168,14 +161,13 @@ export class ComponentController implements Controller {
       res.send({
         status: "success",
         message: "Component has been updated.",
-        data: updatedComponent,
       });
     } catch (error) {
       console.log(error);
 
       res.status(400).send({
         status: "error",
-        message: error.message,
+        message: error.message || "Component has not been updated.",
       });
     }
   }
@@ -210,8 +202,7 @@ export class ComponentController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Component hasn't been deleted.",
-        data: { id: req.params.id },
+        message: error.message || "Component hasn't been deleted.",
       });
     }
   }

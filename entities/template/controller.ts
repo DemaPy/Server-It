@@ -26,15 +26,13 @@ export class TemplateController implements Controller {
       }
       res.send({
         status: "success",
-        message: "",
+        message: "Templates found",
         data: templates,
       });
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Something went wrong",
-        error: error,
-        data: null,
+        message: error.message || "Something went wrong",
       });
     }
   }
@@ -72,14 +70,13 @@ export class TemplateController implements Controller {
       });
       res.send({
         status: "success",
-        message: "",
-        data: template,
+        message: "Template has been found.",
+        data: template
       });
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Something went wrong",
-        data: null,
+        message: error.message || "Something went wrong",
       });
     }
   }
@@ -119,7 +116,7 @@ export class TemplateController implements Controller {
       }
       res.status(400).send({
         status: "error",
-        message: "Template hasn't been created." + error.message,
+        message: error.message || "Template hasn't been created.",
         data: req.body.template,
       });
     }
@@ -166,7 +163,7 @@ export class TemplateController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Template hasn't been updated.",
+        message: error.message || "Template hasn't been updated.",
         data: req.body.template,
       });
     }
@@ -199,7 +196,7 @@ export class TemplateController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Template hasn't been deleted.",
+        message: error.message || "Template hasn't been deleted.",
         data: { id: req.params.id },
       });
     }

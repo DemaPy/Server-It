@@ -69,7 +69,7 @@ export class SectionController implements Controller {
       console.log(error);
       res.status(400).send({
         status: "error",
-        message: error.message,
+        message: error.message || "Section has not been deleted.",
       });
     }
   }
@@ -142,7 +142,6 @@ export class SectionController implements Controller {
       });
     } catch (error) {
       console.log(error);
-
       if (error instanceof PrismaClientValidationError) {
         return res.status(400).send({
           status: "error",
@@ -151,9 +150,7 @@ export class SectionController implements Controller {
       }
       res.status(400).send({
         status: "error",
-        message: "Section hasn't been created.",
-        data: req.body.section,
-        error: error.message,
+        message: error.message || "Section hasn't been created.",
       });
     }
   }
@@ -267,7 +264,7 @@ export class SectionController implements Controller {
       if (error instanceof PrismaClientValidationError) {
         return res.status(400).send({
           status: "error",
-          message: error.message,
+          message: error.message || "Section hasn't been created.",
         });
       }
       res.status(400).send({
@@ -347,8 +344,7 @@ export class SectionController implements Controller {
 
       res.status(400).send({
         status: "error",
-        message: "Section hasn't been updated.",
-        data: req.body.section,
+        message: error.message || "Section hasn't been updated.",
       });
     }
   }
@@ -449,8 +445,7 @@ export class SectionController implements Controller {
 
       res.status(400).send({
         status: "error",
-        message: error.message,
-        data: req.params,
+        message: error.message || "Section has not been duplicated.",
       });
     }
   }

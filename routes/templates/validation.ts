@@ -7,7 +7,7 @@ export class TemplateValidation {
 
   create() {
     return [
-      check("title", "Max: 35, Min: 3 symbols").exists().notEmpty().isLength({
+      check("template.title", "Max: 35, Min: 3 symbols").exists().notEmpty().isLength({
         max: 20,
         min: 3,
       }),
@@ -16,19 +16,19 @@ export class TemplateValidation {
 
   update() {
     return [
-      check("id", "Id is not valid.").exists().notEmpty().isString(),
-      check("title", "Max: 35, Min: 3 symbols")
+      check("template.id", "Id is not valid.").exists().notEmpty().isString(),
+      check("template.title", "Max: 35, Min: 3 symbols")
         .exists()
         .notEmpty()
         .isString()
         .isLength({
-          max: 20,
+          max: 35,
           min: 3,
         }),
     ];
   }
 
   delete() {
-    return [param("id", "Id is not valid.").exists().notEmpty().isString()];
+    return [param("template.id", "Id is not valid.").exists().notEmpty().isString()];
   }
 }

@@ -6,7 +6,7 @@ export const placeholderDTO = (DTO) => (
   next: NextFunction
 ) => {
   try {
-    const placeholder = new DTO(req.body);
+    const placeholder = new DTO(req.body.placeholder);
     req.body.placeholder = placeholder;
     next();
   } catch (error) {

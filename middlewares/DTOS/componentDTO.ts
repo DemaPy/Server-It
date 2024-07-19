@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 export const componentDTO =
   (DTO) => (req: Request, res: Response, next: NextFunction) => {
     try {
-      const component = new DTO(req.body);
+      const component = new DTO(req.body.component);
       req.body.component = component;
       next();
     } catch (error) {

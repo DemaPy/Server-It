@@ -6,7 +6,7 @@ export const templateDTO = (DTO) => (
   next: NextFunction
 ) => {
   try {
-    const template = new DTO(req.body);
+    const template = new DTO(req.body.template);
     req.body.template = template;
     next();
   } catch (error) {

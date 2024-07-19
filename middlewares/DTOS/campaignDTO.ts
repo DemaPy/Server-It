@@ -6,14 +6,13 @@ export const campaignDTO = (DTO) => (
   next: NextFunction
 ) => {
   try {
-    const campaign = new DTO(req.body);
+    const campaign = new DTO(req.body.campaign);
     req.body.campaign = campaign;
     next();
   } catch (error) {
     res.status(400).send({
       status: "error",
       message: "Bad Request",
-      data: null,
       error: error,
     });
     console.error(error);

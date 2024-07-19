@@ -36,6 +36,7 @@ campaignRouter.post(
 campaignRouter.patch(
   "/",
   MIDDLEWARES.user,
+  Validation.update(),
   campaignDTO(UpdateCampaignDTO),
   Controller.update
 );

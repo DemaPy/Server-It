@@ -10,7 +10,7 @@ import {
   CreateCampaignDTO,
   UpdateCampaignDTO,
 } from "../../routes/campaigns/dto";
-import { JsonObject } from "@prisma/client/runtime/library";
+import { JsonObject, PrismaClientValidationError } from "@prisma/client/runtime/library";
 
 export class CampaignController implements Controller {
   async create(
@@ -29,7 +29,7 @@ export class CampaignController implements Controller {
 
       const user: UserToken = req.body.user;
       const campaign: CreateCampaignDTO = req.body.campaign;
-      
+
       const template = await prisma.template.findUnique({
         where: {
           id: campaign.templateId,
@@ -77,8 +77,7 @@ export class CampaignController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Campaign hasn't been created.",
-        data: req.body.campaign,
+        message: error.message || "Campaign hasn't been created.",
       });
     }
   }
@@ -193,8 +192,7 @@ export class CampaignController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Campaign data hasn't been created.",
-        data: req.body.campaign,
+        message: error.message || "Campaign data hasn't been created.",
       });
     }
   }
@@ -229,8 +227,7 @@ export class CampaignController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Campaign hasn't been deleted.",
-        data: { id: req.params.id },
+        message: error.message || "Campaign hasn't been deleted.",
       });
     }
   }
@@ -265,8 +262,7 @@ export class CampaignController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Campaign hasn't been deleted.",
-        data: { id: req.params.id },
+        message: error.message || "Campaign hasn't been deleted.",
       });
     }
   }
@@ -293,10 +289,15 @@ export class CampaignController implements Controller {
         data: updatedCampaign,
       });
     } catch (error) {
+      if (error instanceof PrismaClientValidationError) {
+        return res.status(400).send({
+          status: "error",
+          message: error.message,
+        });
+      }
       res.status(400).send({
         status: "error",
-        message: "Campaign hasn't been updated.",
-        data: req.body.campaign,
+        message: error.message || "Campaign hasn't been updated.",
       });
     }
   }
@@ -323,9 +324,7 @@ export class CampaignController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Something went wrong",
-        error: error,
-        data: null,
+        message: error.message || "Something went wrong",
       });
     }
   }
@@ -375,8 +374,7 @@ export class CampaignController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Something went wrong",
-        data: null,
+        message: error.message || "Something went wrong",
       });
     }
   }

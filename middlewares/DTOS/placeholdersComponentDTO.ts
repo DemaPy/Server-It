@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 export const placeholderDTO =
   (DTO) => (req: Request, res: Response, next: NextFunction) => {
     try {
-      const placeholder = new DTO(req.body);
+      const placeholder = new DTO(req.body.placeholder);
       req.body.placeholder = placeholder;
       next();
     } catch (error) {

@@ -6,7 +6,7 @@ export const layoutDTO = (DTO) => (
   next: NextFunction
 ) => {
   try {
-    const layout = new DTO(req.body);
+    const layout = new DTO(req.body.layout);
     req.body.layout = layout;
     next();
   } catch (error) {

@@ -1,4 +1,8 @@
 import { check, param } from "express-validator";
+import {
+  campaign_validation_keys,
+  campaign_validation_messages,
+} from "./messages";
 
 export class CampaignValidation {
   get() {
@@ -7,11 +11,21 @@ export class CampaignValidation {
 
   create() {
     return [
-      check("title", "Max: 35, Min: 3 symbols").exists().notEmpty().isString().isLength({
-        max: 20,
-        min: 3,
-      }),
-      check("templateId", "Template id is not valid.")
+      check(
+        campaign_validation_keys.title,
+        campaign_validation_messages[campaign_validation_keys.title]
+      )
+        .exists()
+        .notEmpty()
+        .isString()
+        .isLength({
+          max: 20,
+          min: 3,
+        }),
+      check(
+        campaign_validation_keys.templateId,
+        campaign_validation_messages[campaign_validation_keys.templateId]
+      )
         .exists()
         .notEmpty()
         .isString()
@@ -22,26 +36,38 @@ export class CampaignValidation {
   }
 
   createData() {
-    return [
-      
-    ];
+    return [];
   }
 
   update() {
     return [
-      check("id", "Id is not valid.").exists().notEmpty().isString(),
-      check("title", "Max: 35, Min: 3 symbols")
+      check(
+        campaign_validation_keys.id,
+        campaign_validation_messages[campaign_validation_keys.id]
+      )
+        .exists()
+        .notEmpty()
+        .isString(),
+      check(
+        campaign_validation_keys.title,
+        campaign_validation_messages[campaign_validation_keys.title]
+      )
         .exists()
         .notEmpty()
         .isString()
         .isLength({
-          max: 20,
+          max: 35,
           min: 3,
         }),
     ];
   }
 
   delete() {
-    return [param("id", "Id is not valid.").exists().notEmpty().isString()];
+    return [
+      param("id", campaign_validation_messages[campaign_validation_keys.id])
+        .exists()
+        .notEmpty()
+        .isString(),
+    ];
   }
 }
