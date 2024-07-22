@@ -4,6 +4,7 @@ import { CampaignValidation } from "./validation";
 import { CreateCampaignDTO, UpdateCampaignDTO } from "./dto";
 import { MIDDLEWARES } from "../../middlewares/guard";
 import { CampaignController } from "../../entities/campaign/controller";
+import { validationResult } from "express-validator";
 
 export const campaignRouter = Router();
 const Validation = new CampaignValidation();

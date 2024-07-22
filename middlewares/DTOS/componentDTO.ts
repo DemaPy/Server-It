@@ -9,9 +9,7 @@ export const componentDTO =
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: "Bad Request",
-        error: error,
-        data: null,
+        message: error.message || "Bad Request",
       });
       console.error(error);
     }

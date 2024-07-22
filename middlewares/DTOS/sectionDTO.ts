@@ -8,9 +8,7 @@ export const sectionDTO = (DTO) => (req: Request, res: Response, next: NextFunct
   } catch (error) {
     res.status(400).send({
       status: "error",
-      message: "Bad Request",
-      data: null,
-      error: error,
+      message: error.message || "Bad Request",
     });
     console.error(error);
   }

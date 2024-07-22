@@ -272,6 +272,15 @@ export class CampaignController implements Controller {
     res: Response<any, Record<string, any>>
   ) {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
+      }
+      
       const user: UserToken = req.body.user;
       const campaign: UpdateCampaignDTO = req.body.campaign;
       const updatedCampaign = await prisma.campaign.update({

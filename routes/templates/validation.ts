@@ -8,7 +8,7 @@ export class TemplateValidation {
   create() {
     return [
       check("template.title", "Max: 35, Min: 3 symbols").exists().notEmpty().isLength({
-        max: 20,
+        max: 35,
         min: 3,
       }),
     ];

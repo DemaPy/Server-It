@@ -8,8 +8,8 @@ import {
   UpdateComponentDTO,
 } from "../../routes/components/dto";
 import { validationResult } from "express-validator";
-import { User } from "@prisma/client";
-import { encode } from "html-entities";
+import { Prisma, User } from "@prisma/client";
+import { decode, encode } from "html-entities";
 
 export class ComponentController implements Controller {
   async getAll(req: Request, res: Response) {
@@ -110,7 +110,7 @@ export class ComponentController implements Controller {
     } catch (error) {
       res.status(400).send({
         status: "error",
-        message: error.message ||"Component hasn't been created.",
+        message: error.message || "Component hasn't been created.",
       });
     }
   }
@@ -145,19 +145,27 @@ export class ComponentController implements Controller {
         throw new Error("Component not found.");
       }
 
-      await prisma.component.update({
-        where: {
-          id: component.id,
-          userId: user.id,
-        },
-        data: {
-          title: component.title,
-          content: component.content,
-        },
-        include: {
-          placeholders: true,
-        },
-      });
+      await prisma.$transaction([
+        prisma.componentPlaceholder.deleteMany({
+          where: {
+            id: {
+              in: isComponentExist.placeholders.map((item) => item.id),
+            },
+          },
+        }),
+
+        prisma.component.update({
+          where: {
+            id: isComponentExist.id,
+            userId: user.id,
+          },
+          data: {
+            title: component.title,
+            content: encode(component.content),
+          },
+        }),
+      ]);
+
       res.send({
         status: "success",
         message: "Component has been updated.",

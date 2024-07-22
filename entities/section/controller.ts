@@ -197,7 +197,7 @@ export class SectionController implements Controller {
       // update placeholder id in content
       const dom = new jsdom.JSDOM(component.content);
       const body = dom.window.document.body;
-      
+
       const section_placeholders = component.placeholders.map((item) => {
         const id = uuidv4();
         const placeholder_to_change = body.querySelector(
@@ -210,7 +210,7 @@ export class SectionController implements Controller {
           title: item.title,
         };
       });
-      const new_content = body.innerHTML
+      const new_content = body.innerHTML;
 
       let createdSection = await prisma.section.create({
         data: {
@@ -282,7 +282,37 @@ export class SectionController implements Controller {
   async getOne(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
     res: Response<any, Record<string, any>>
-  ) {}
+  ) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).send({
+          status: "error",
+          message: "Validation error",
+          ...errors,
+        });
+      }
+
+      const user: User = req.body.user;
+      const { id } = req.params;
+      const section = await prisma.section.findUnique({
+        where: {
+          id: id,
+        },
+      });
+      res.send({
+        status: "success",
+        message:
+          section === null ? `Section ${id} not found` : `Section ${id} found`,
+        data: section,
+      });
+    } catch (error) {
+      res.status(400).send({
+        status: "error",
+        message: error.message || "Something went wrong",
+      });
+    }
+  }
 
   async update(
     req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
@@ -317,27 +347,31 @@ export class SectionController implements Controller {
         throw new Error("Section not found.");
       }
 
-      const updatedSection = await prisma.section.update({
-        where: {
-          id: section.id,
-        },
-        data: {
-          title: section.title,
-          content: section.content,
-          placeholders: {
-            createMany: {
-              data: section.placeholders,
+      await prisma.$transaction([
+        prisma.sectionPlaceholder.deleteMany({
+          where: {
+            id: {
+              in: isSectionExist.placeholders.map((item) => item.id),
             },
           },
-        },
-        include: {
-          placeholders: true,
-        },
-      });
+        }),
+        prisma.section.update({
+          where: {
+            id: isSectionExist.id,
+          },
+          data: {
+            title: section.title,
+            content: encode(section.content),
+          },
+          include: {
+            placeholders: true,
+          },
+        }),
+      ]);
+
       res.send({
         status: "success",
         message: "Section has been updated.",
-        data: updatedSection,
       });
     } catch (error) {
       console.log(error);

@@ -1,28 +1,18 @@
-import { ComponentPlaceholder } from "@prisma/client";
-
-type CreateComponentPlaceholderDTOObject = {
-  id: ComponentPlaceholder["id"];
-  title: ComponentPlaceholder["title"];
-  fallback: ComponentPlaceholder["fallback"];
-  componentId: ComponentPlaceholder["componentId"];
-}
+import { Component, ComponentPlaceholder } from "@prisma/client";
 
 export class CreateComponentPlaceholderDTO {
-  placeholders: CreateComponentPlaceholderDTOObject[] = []
+  componentId: ComponentPlaceholder["componentId"];
+  content: Component["content"];
+  placeholders: ComponentPlaceholder[] = [];
   constructor(data: any) {
-    if (!("placeholders" in data)) {
-      throw new Error("Bad request");
-    }
-    if (data.placeholders.length === 0) {
-      throw new Error("Bad request");
-    }
-
+    this.componentId = data.id;
+    this.content = data.content;
     for (const placeholder of data.placeholders) {
       this.placeholders.push({
-        componentId: placeholder.componentId,
-        fallback: placeholder.fallback,
         id: placeholder.id,
+        fallback: placeholder.fallback,
         title: placeholder.title,
+        componentId: data.id
       });
     }
   }

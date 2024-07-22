@@ -10,41 +10,70 @@ import {
 } from "./dto";
 import { decode, encode } from "html-entities";
 import jsdom from "jsdom";
+import { SectionPlaceholderValidation } from "./validation";
+import { validationResult } from "express-validator";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export const sectionPlaceholderRouter = Router();
+const Validation = new SectionPlaceholderValidation();
 
 sectionPlaceholderRouter.post(
   "/",
   MIDDLEWARES.user,
+  Validation.create(),
   placeholderDTO(CreateSectionPlaceholderDTO),
   async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).send({
+        status: "error",
+        message: "Validation error",
+        ...errors,
+      });
+    }
     try {
       const user: UserToken = req.body.user;
-      const { placeholders }: CreateSectionPlaceholderDTO =
+      const { placeholders, sectionId, content }: CreateSectionPlaceholderDTO =
         req.body.placeholder;
 
       const section = await prisma.section.findUnique({
         where: {
-          id: placeholders[0].sectionId,
+          id: sectionId,
         },
       });
       if (!section) {
         throw new Error("Section not found.");
       }
 
-      const count = await prisma.sectionPlaceholder.createMany({
-        data: placeholders,
-      });
+      prisma.$transaction([
+        prisma.section.update({
+          where: {
+            id: sectionId,
+          },
+          data: {
+            content: content,
+          },
+        }),
+        prisma.sectionPlaceholder.createMany({
+          data: placeholders,
+        }),
+      ]);
+
       res.send({
         status: "success",
         message: "Placeholders has been created.",
-        data: placeholders,
       });
     } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        res.status(400).send({
+          status: "error",
+          message: error.message || "DB error happend",
+        });
+      }
+
       res.status(400).send({
         status: "error",
         message: "Placeholders hasn't been created.",
-        error: error.message,
       });
     }
   }
@@ -79,7 +108,6 @@ sectionPlaceholderRouter.patch(
       res.send({
         status: "success",
         message: "Placeholder has been updated.",
-        data: updatedPlaceholder,
       });
     } catch (error) {
       res.status(400).send({
@@ -118,7 +146,7 @@ sectionPlaceholderRouter.delete(
         `[data-template-it_id='${placeholder.id}']`
       );
       placeholder_to_delete.remove();
-      const new_content = body.innerHTML
+      const new_content = body.innerHTML;
 
       await prisma.section.update({
         where: {

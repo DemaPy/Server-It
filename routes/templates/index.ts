@@ -4,6 +4,7 @@ import { TemplateController } from "../../entities/template/controller";
 import { CreateTemplateDTO, UpdateTemplateDTO } from "./dto";
 import { TemplateValidation } from "./validation";
 import { MIDDLEWARES } from "../../middlewares/guard";
+import { validationResult } from "express-validator";
 
 export const templateRouter = Router();
 const Controller = new TemplateController();
@@ -11,7 +12,12 @@ const Validation = new TemplateValidation();
 
 templateRouter.get("/", MIDDLEWARES.guest, Controller.getAll);
 
-templateRouter.get("/:id", MIDDLEWARES.guest, Validation.get(), Controller.getOne);
+templateRouter.get(
+  "/:id",
+  MIDDLEWARES.guest,
+  Validation.get(),
+  Controller.getOne
+);
 
 templateRouter.post(
   "/",
@@ -29,4 +35,9 @@ templateRouter.patch(
   Controller.update
 );
 
-templateRouter.delete("/:id", MIDDLEWARES.user, Validation.delete(), Controller.delete);
+templateRouter.delete(
+  "/:id",
+  MIDDLEWARES.user,
+  Validation.delete(),
+  Controller.delete
+);
