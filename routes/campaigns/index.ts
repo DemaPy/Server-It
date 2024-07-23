@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { campaignDTO } from "../../middlewares/DTOS/campaignDTO";
 import { CampaignValidation } from "./validation";
-import { CreateCampaignDTO, UpdateCampaignDTO } from "./dto";
+import {
+  CreateCampaignDataDTO,
+  CreateCampaignDTO,
+  UpdateCampaignDTO,
+} from "./dto";
 import { MIDDLEWARES } from "../../middlewares/guard";
 import { CampaignController } from "../../entities/campaign/controller";
 import { validationResult } from "express-validator";
@@ -31,6 +35,7 @@ campaignRouter.post(
   "/:id/data",
   MIDDLEWARES.user,
   Validation.createData(),
+  campaignDTO(CreateCampaignDataDTO),
   Controller.createData
 );
 

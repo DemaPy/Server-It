@@ -135,8 +135,6 @@ componentPlaceholdersRouter.delete(
       const dom = new jsdom.JSDOM(component.content);
       const body = dom.window.document.body;
 
-      console.log(component);
-      
       const placeholder_to_delete = body.querySelector(
         `[data-template-it_id='${placeholder.id}']`
       );

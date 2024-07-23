@@ -14,7 +14,7 @@ export class UpdateLayoutDTO {
 export class UpdateLayoutsOrderDTO {
   layout: Layout[] = []
   constructor(data: any) {
-    for (const layout of data.layout) {
+    for (const layout of data) {
       this.layout.push({
         id: layout.id,
         campaignId: layout.campaignId,

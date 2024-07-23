@@ -36,34 +36,46 @@ export class SectionController implements Controller {
       const { id } = req.params;
       const user: User = req.body.user;
 
-      const deletedSection = await prisma.section.delete({
+      const isSectionExist = await prisma.section.findUnique({
         where: {
           id: id,
         },
       });
+      if (!isSectionExist) {
+        throw new Error("Section not found.");
+      }
 
       const campaigns = await prisma.campaign.findMany({
         where: {
           templateId: {
-            equals: deletedSection.templateId,
+            equals: isSectionExist.templateId,
           },
         },
       });
 
+      const toUpdate = [];
       if (campaigns) {
         const newCampaigns = campaigns.map((campaign) => {
-          delete campaign.data[deletedSection.id];
+          delete campaign.data[isSectionExist.id];
           return campaign;
         });
         for (const item of newCampaigns) {
-          await prisma.campaign.update({ where: { id: item.id }, data: item });
+          toUpdate.push({ where: { id: item.id }, data: item });
         }
       }
+
+      await prisma.$transaction([
+        ...toUpdate.map((item) => prisma.campaign.update(item)),
+        prisma.section.delete({
+          where: {
+            id: id,
+          },
+        }),
+      ]);
 
       res.send({
         status: "success",
         message: "Section has been deleted.",
-        data: deletedSection,
       });
     } catch (error) {
       console.log(error);
@@ -346,22 +358,40 @@ export class SectionController implements Controller {
       if (!isSectionExist) {
         throw new Error("Section not found.");
       }
-
+      const dom = new jsdom.JSDOM(section.content);
+      const body = dom.window.document.body;
+      // Itarate through all placeholders and insert ID instead of span node
+      isSectionExist.placeholders.map(item => {
+        const placeholder_to_delete = body.querySelector(
+          `[data-template-it_id='${item.id}']`
+        );
+        if (!placeholder_to_delete) {
+          throw new Error("Placeholder: " + item.id + ". Not found in: " + section.content)
+        }
+        placeholder_to_delete.insertAdjacentHTML("beforebegin", item.id)
+        placeholder_to_delete.remove()
+      })
+      // Overwrite body content with encoded html
+      let encoded_html = encode(body.innerHTML)
+      // Itarate through all placeholders and insert span instead of id
+      isSectionExist.placeholders.map(item => {
+        encoded_html = encoded_html.replace(item.id, `<span style='cursor: pointer; padding: 0.2rem 0.4rem; border-radius: 0.2rem; background: rgba(9, 92, 236, 0.39); font-size: 14px; box-shadow: rgba(0, 0, 0, 0.376) 0px 0px 5px;' data-template-it_id='${item.id}'>${item.title}</span>`)
+      })
       await prisma.$transaction([
-        prisma.sectionPlaceholder.deleteMany({
-          where: {
-            id: {
-              in: isSectionExist.placeholders.map((item) => item.id),
-            },
-          },
-        }),
+        // prisma.sectionPlaceholder.deleteMany({
+        //   where: {
+        //     id: {
+        //       in: isSectionExist.placeholders.map((item) => item.id),
+        //     },
+        //   },
+        // }),
         prisma.section.update({
           where: {
             id: isSectionExist.id,
           },
           data: {
             title: section.title,
-            content: encode(section.content),
+            content: encoded_html,
           },
           include: {
             placeholders: true,

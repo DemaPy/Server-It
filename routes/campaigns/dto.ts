@@ -17,3 +17,10 @@ export class UpdateCampaignDTO {
     this.title = data.title;
   }
 }
+
+export class CreateCampaignDataDTO {
+  data: Campaign["data"];
+  constructor(data: any) {
+    this.data = data;
+  }
+}

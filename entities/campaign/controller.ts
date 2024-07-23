@@ -7,10 +7,14 @@ import { prisma } from "../../db";
 import { validationResult } from "express-validator";
 import { Layout } from "@prisma/client";
 import {
+  CreateCampaignDataDTO,
   CreateCampaignDTO,
   UpdateCampaignDTO,
 } from "../../routes/campaigns/dto";
-import { JsonObject, PrismaClientValidationError } from "@prisma/client/runtime/library";
+import {
+  JsonObject,
+  PrismaClientValidationError,
+} from "@prisma/client/runtime/library";
 
 export class CampaignController implements Controller {
   async create(
@@ -99,13 +103,9 @@ export class CampaignController implements Controller {
       const { id } = req.params;
       const user: UserToken = req.body.user;
       delete req.body.user;
-      const placeholder_data: Record<
-        string,
-        Record<string, Record<string, string>>
-      > = req.body;
+      const placeholder_data: CreateCampaignDataDTO = req.body.campaign;
 
-      const sectionId = Object.keys(placeholder_data)[0];
-
+      const sectionId = Object.keys(placeholder_data.data)[0];
       const campaign = await prisma.campaign.findUnique({
         where: {
           id: id,
@@ -137,9 +137,9 @@ export class CampaignController implements Controller {
         isSectionWithDataExists = true;
       }
 
+      const allSlugs = Object.values(Object.values(placeholder_data.data)[0]);
       const generateSlugs = () => {
         const _slugs = {};
-        const allSlugs = Object.values(Object.values(placeholder_data)[0]);
         for (const iterator of allSlugs) {
           const slugs = Object.keys(iterator);
           for (const slug of slugs) {
@@ -155,7 +155,7 @@ export class CampaignController implements Controller {
         return _slugs;
       };
 
-      const updated_campaign = await prisma.campaign.update({
+      await prisma.campaign.update({
         where: {
           id: id,
         },
@@ -170,7 +170,7 @@ export class CampaignController implements Controller {
               }
             : {
                 ...(campaign.data as JsonObject),
-                ...placeholder_data,
+                ...(placeholder_data.data as JsonObject),
               },
         },
       });
@@ -187,7 +187,6 @@ export class CampaignController implements Controller {
       res.send({
         status: "success",
         message: "Campaign data has been created.",
-        data: updated_campaign,
       });
     } catch (error) {
       res.status(400).send({
@@ -280,7 +279,7 @@ export class CampaignController implements Controller {
           ...errors,
         });
       }
-      
+
       const user: UserToken = req.body.user;
       const campaign: UpdateCampaignDTO = req.body.campaign;
       const updatedCampaign = await prisma.campaign.update({

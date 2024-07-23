@@ -9,6 +9,7 @@ import {
 } from "../../routes/components/dto";
 import { validationResult } from "express-validator";
 import { Prisma, User } from "@prisma/client";
+import jsdom from "jsdom";
 import { decode, encode } from "html-entities";
 
 export class ComponentController implements Controller {
@@ -145,14 +146,31 @@ export class ComponentController implements Controller {
         throw new Error("Component not found.");
       }
 
+      const dom = new jsdom.JSDOM(component.content);
+      const body = dom.window.document.body;
+      // Itarate through all placeholders and insert ID instead of span node
+      isComponentExist.placeholders.map(item => {
+        const placeholder_to_delete = body.querySelector(
+          `[data-template-it_id='${item.id}']`
+        );
+        placeholder_to_delete.insertAdjacentHTML("beforebegin", item.id)
+        placeholder_to_delete.remove()
+      })
+      // Overwrite body content with encoded html
+      let encoded_html = encode(body.innerHTML)
+      // Itarate through all placeholders and insert span instead of id
+      isComponentExist.placeholders.map(item => {
+        encoded_html = encoded_html.replace(item.id, `<span style='cursor: pointer; padding: 0.2rem 0.4rem; border-radius: 0.2rem; background: rgba(9, 92, 236, 0.39); font-size: 14px; box-shadow: rgba(0, 0, 0, 0.376) 0px 0px 5px;' data-template-it_id='${item.id}'>${item.title}</span>`)
+      })
+
       await prisma.$transaction([
-        prisma.componentPlaceholder.deleteMany({
-          where: {
-            id: {
-              in: isComponentExist.placeholders.map((item) => item.id),
-            },
-          },
-        }),
+        // prisma.componentPlaceholder.deleteMany({
+        //   where: {
+        //     id: {
+        //       in: isComponentExist.placeholders.map((item) => item.id),
+        //     },
+        //   },
+        // }),
 
         prisma.component.update({
           where: {
@@ -161,7 +179,7 @@ export class ComponentController implements Controller {
           },
           data: {
             title: component.title,
-            content: encode(component.content),
+            content: encoded_html,
           },
         }),
       ]);
