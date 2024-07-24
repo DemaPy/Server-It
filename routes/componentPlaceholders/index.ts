@@ -8,7 +8,7 @@ import {
   CreateComponentPlaceholderDTO,
   UpdateComponentPlaceholderDTO,
 } from "./dto";
-import { decode, encode } from "html-entities";
+import { decode } from "html-entities";
 import jsdom from "jsdom";
 import { ComponentPlaceholderValidation } from "./validation";
 import { validationResult } from "express-validator";
@@ -123,6 +123,8 @@ componentPlaceholdersRouter.delete(
           id: id,
         },
       });
+      console.log(placeholder, id);
+      
       if (!placeholder) {
         throw new Error("Placeholder doesn't exist.");
       }

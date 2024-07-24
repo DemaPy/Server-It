@@ -14,7 +14,6 @@ import {
   CreateSectionFromComponentDTO,
   UpdateSectionDTO,
 } from "../../routes/sections/dto";
-import { decode, encode } from "html-entities";
 import { isTemplateExist } from "../../utils/helper";
 import { v4 as uuidv4 } from "uuid";
 import jsdom from "jsdom";
@@ -114,7 +113,12 @@ export class SectionController implements Controller {
       let createdSection = await prisma.section.create({
         data: {
           title: section.title,
-          content: encode(section.content),
+          content: section.content,
+          placeholders: {
+            createMany: {
+              data: section.placeholders,
+            },
+          },
           templateId: section.templateId,
           order:
             template.sections.length <= 1
@@ -311,6 +315,9 @@ export class SectionController implements Controller {
         where: {
           id: id,
         },
+        include: {
+          placeholders: true,
+        },
       });
       res.send({
         status: "success",
@@ -358,46 +365,28 @@ export class SectionController implements Controller {
       if (!isSectionExist) {
         throw new Error("Section not found.");
       }
-      const dom = new jsdom.JSDOM(section.content);
-      const body = dom.window.document.body;
-      // Itarate through all placeholders and insert ID instead of span node
-      isSectionExist.placeholders.map(item => {
-        const placeholder_to_delete = body.querySelector(
-          `[data-template-it_id='${item.id}']`
-        );
-        if (!placeholder_to_delete) {
-          throw new Error("Placeholder: " + item.id + ". Not found in: " + section.content)
-        }
-        placeholder_to_delete.insertAdjacentHTML("beforebegin", item.id)
-        placeholder_to_delete.remove()
-      })
-      // Overwrite body content with encoded html
-      let encoded_html = encode(body.innerHTML)
-      // Itarate through all placeholders and insert span instead of id
-      isSectionExist.placeholders.map(item => {
-        encoded_html = encoded_html.replace(item.id, `<span style='cursor: pointer; padding: 0.2rem 0.4rem; border-radius: 0.2rem; background: rgba(9, 92, 236, 0.39); font-size: 14px; box-shadow: rgba(0, 0, 0, 0.376) 0px 0px 5px;' data-template-it_id='${item.id}'>${item.title}</span>`)
-      })
-      await prisma.$transaction([
-        // prisma.sectionPlaceholder.deleteMany({
-        //   where: {
-        //     id: {
-        //       in: isSectionExist.placeholders.map((item) => item.id),
-        //     },
-        //   },
-        // }),
-        prisma.section.update({
-          where: {
-            id: isSectionExist.id,
+      await prisma.section.update({
+        where: {
+          id: isSectionExist.id,
+        },
+        data: {
+          title: section.title,
+          content: section.content,
+          placeholders: {
+            deleteMany: {
+              id: {
+                in: section.placeholdersToDelete.map((item) => item.id),
+              },
+            },
+            createMany: {
+              data: section.placeholdersToCreate,
+            },
           },
-          data: {
-            title: section.title,
-            content: encoded_html,
-          },
-          include: {
-            placeholders: true,
-          },
-        }),
-      ]);
+        },
+        include: {
+          placeholders: true,
+        },
+      });
 
       res.send({
         status: "success",
@@ -454,20 +443,6 @@ export class SectionController implements Controller {
         throw new Error("Template not found.");
       }
 
-      const createdSection = await prisma.section.create({
-        data: {
-          title: sectionToDuplicate.title + " copy",
-          content: sectionToDuplicate.content,
-          templateId: sectionToDuplicate.templateId,
-          order: template.sections.length,
-        },
-      });
-      if (sectionToDuplicate.placeholders) {
-        await prisma.sectionPlaceholder.createMany({
-          data: sectionToDuplicate.placeholders,
-        });
-      }
-
       // Create layout for all campaigns that use this template
       const campaigns = await prisma.campaign.findMany({
         where: {
@@ -477,33 +452,64 @@ export class SectionController implements Controller {
           layout: true,
         },
       });
-      if (campaigns.length > 0) {
-        const updatedLayouts = campaigns.map((item) => {
-          return {
-            sectionId: createdSection.id,
-            order: item.layout.length,
-            campaignId: item.id,
-            is_active: true,
-            renderOn: {},
-          };
-        });
 
-        await prisma.layout.createMany({
-          data: updatedLayouts,
-        });
-      }
+      // generate placeholders with new id,
+      // update placeholder id in content
+      const dom = new jsdom.JSDOM(sectionToDuplicate.content);
+      const body = dom.window.document.body;
+
+      const section_placeholders = sectionToDuplicate.placeholders.map(
+        (item) => {
+          const id = uuidv4();
+          const placeholder_to_change = body.querySelector(
+            `[data-template-it_id='${item.id}']`
+          );
+          placeholder_to_change.setAttribute("data-template-it_id", id);
+          return {
+            id: id,
+            fallback: item.fallback,
+            title: item.title,
+          };
+        }
+      );
+      const new_content = body.innerHTML;
+
+      await prisma.section.create({
+        data: {
+          title: sectionToDuplicate.title + " copy",
+          content: new_content,
+          templateId: sectionToDuplicate.templateId,
+          Layout: {
+            createMany: {
+              data: campaigns.map((item) => {
+                return {
+                  order: item.layout.length,
+                  campaignId: item.id,
+                  is_active: true,
+                  renderOn: {},
+                };
+              }),
+            },
+          },
+          placeholders: {
+            createMany: {
+              data: section_placeholders,
+            },
+          },
+          order: template.sections.length,
+        },
+      });
 
       res.send({
         status: "success",
         message: "Section has been duplicated.",
-        data: createdSection,
       });
     } catch (error) {
       console.log(error);
       if (error instanceof PrismaClientKnownRequestError) {
         return res.status(400).send({
           status: "error",
-          message: error.meta.cause,
+          message: error.meta.cause || "Section has not been duplicated.",
         });
       }
 

@@ -8,7 +8,7 @@ import {
   CreateSectionPlaceholderDTO,
   UpdateSectionPlaceholderDTO,
 } from "./dto";
-import { decode, encode } from "html-entities";
+import { decode } from "html-entities";
 import jsdom from "jsdom";
 import { SectionPlaceholderValidation } from "./validation";
 import { validationResult } from "express-validator";
