@@ -1,8 +1,8 @@
 import { config } from "dotenv";
 config();
 import cookieParser from "cookie-parser";
-import express from "express";
-import cors from "cors";
+import * as express from "express";
+import * as cors from "cors";
 import {
   templateRouter,
   sectionRouter,
@@ -14,16 +14,16 @@ import {
   componentPlaceholdersRouter,
   userRouter,
 } from "./routes";
-const app = express();
+const app = express.default();
 
 app.use(express.json());
 var corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.FRONTEND,
   credentials: true,
   methods: "GET,PUT,POST,OPTIONS,DELETE,PATCH",
   allowedHeaders: "Content-Type,Authorization",
 };
-app.use(cors(corsOptions));
+app.use(cors.default(corsOptions));
 app.use(cookieParser());
 
 app.use("/templates", templateRouter);

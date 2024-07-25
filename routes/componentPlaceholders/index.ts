@@ -9,7 +9,7 @@ import {
   UpdateComponentPlaceholderDTO,
 } from "./dto";
 import { decode } from "html-entities";
-import jsdom from "jsdom";
+import * as jsdom from "jsdom";
 import { ComponentPlaceholderValidation } from "./validation";
 import { validationResult } from "express-validator";
 

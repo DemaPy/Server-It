@@ -9,7 +9,7 @@ import {
   UpdateSectionPlaceholderDTO,
 } from "./dto";
 import { decode } from "html-entities";
-import jsdom from "jsdom";
+import * as jsdom from "jsdom";
 import { SectionPlaceholderValidation } from "./validation";
 import { validationResult } from "express-validator";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";

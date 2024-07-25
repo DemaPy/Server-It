@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.templateRouter = void 0;
+var express_1 = require("express");
+var templateDTO_1 = require("../../middlewares/DTOS/templateDTO");
+var controller_1 = require("../../entities/template/controller");
+var dto_1 = require("./dto");
+var validation_1 = require("./validation");
+var guard_1 = require("../../middlewares/guard");
+exports.templateRouter = (0, express_1.Router)();
+var Controller = new controller_1.TemplateController();
+var Validation = new validation_1.TemplateValidation();
+exports.templateRouter.get("/", guard_1.MIDDLEWARES.guest, Controller.getAll);
+exports.templateRouter.get("/:id", guard_1.MIDDLEWARES.guest, Validation.get(), Controller.getOne);
+exports.templateRouter.post("/", guard_1.MIDDLEWARES.user, Validation.create(), (0, templateDTO_1.templateDTO)(dto_1.CreateTemplateDTO), Controller.create);
+exports.templateRouter.patch("/", guard_1.MIDDLEWARES.user, Validation.update(), (0, templateDTO_1.templateDTO)(dto_1.UpdateTemplateDTO), Controller.update);
+exports.templateRouter.delete("/:id", guard_1.MIDDLEWARES.user, Validation.delete(), Controller.delete);
