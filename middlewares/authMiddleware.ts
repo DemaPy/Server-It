@@ -1,4 +1,4 @@
-import jwt, { TokenExpiredError } from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 
 export const authMiddleware = (req, res, next) => {
   if (req.method === "OPTIONS") {
@@ -18,14 +18,12 @@ export const authMiddleware = (req, res, next) => {
     req.body.user = decodeData;
     next();
   } catch (error) {
-    if (error instanceof TokenExpiredError) {
+    if (error instanceof jwt.TokenExpiredError) {
       return res
-      .status(401)
-      .json({ status: "error", message: "Token expired." });
+        .status(401)
+        .json({ status: "error", message: "Token expired." });
     }
-    
-    return res
-      .status(403)
-      .json({ status: "error", message: error.message });
+
+    return res.status(403).json({ status: "error", message: error.message });
   }
 };

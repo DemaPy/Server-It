@@ -16,7 +16,7 @@ import {
 } from "../../routes/sections/dto";
 import { isTemplateExist } from "../../utils/helper";
 import { v4 as uuidv4 } from "uuid";
-import jsdom from "jsdom";
+import * as jsdom from "jsdom";
 
 export class SectionController implements Controller {
   async delete(

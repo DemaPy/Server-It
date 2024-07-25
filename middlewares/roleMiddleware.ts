@@ -1,5 +1,5 @@
 import { Role, User } from "@prisma/client";
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 
 export const roleMiddleware = (roles: Role[]) => (req, res, next) => {
   if (req.method === "OPTIONS") {

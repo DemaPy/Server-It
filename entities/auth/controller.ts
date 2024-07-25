@@ -1,9 +1,9 @@
 import { Role, User } from "@prisma/client";
 import { prisma } from "../../db";
 import { userDTO } from "../user/dto";
-import bcrypt from "bcrypt";
+import * as bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 
 export type UserToken = {
   id: User["id"];
@@ -65,12 +65,10 @@ export class AuthController {
       // res.cookie("accessToken", token, {maxAge: 3600, httpOnly: true})
       return res.json({ status: "success", data: { token } });
     } catch (error) {
-      return res
-        .status(400)
-        .json({
-          status: "error",
-          message: error.message || "An error occurred",
-        });
+      return res.status(400).json({
+        status: "error",
+        message: error.message || "An error occurred",
+      });
     }
   }
 
