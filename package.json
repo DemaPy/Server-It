@@ -7,7 +7,7 @@
     "dev": "nodemon index.ts",
     "build": "tsc index.ts",
     "start": "node index.js",
-    "db_init": "npx prisma migrate dev, npx prisma generate"
+    "db_init": "npx prisma migrate dev && npx prisma generate"
   },
   "keywords": [],
   "author": "",
