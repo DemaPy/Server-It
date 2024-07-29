@@ -14,15 +14,18 @@ var SectionValidation = /** @class */ (function () {
     };
     SectionValidation.prototype.create = function () {
         return [
-            (0, express_validator_1.check)("section.title", "Max: 20, Min: 3 symbols")
+            (0, express_validator_1.check)("section.title", "Max: 35, Min: 3 symbols")
                 .exists()
                 .notEmpty()
                 .isLength({
-                max: 20,
+                max: 35,
                 min: 3,
             })
                 .isString(),
-            (0, express_validator_1.check)("section.content", "Content is not valid.").exists().notEmpty().isLength({
+            (0, express_validator_1.check)("section.content", "Content is not valid.")
+                .exists()
+                .notEmpty()
+                .isLength({
                 max: 1000000,
                 min: 3,
             }),
@@ -56,12 +59,12 @@ var SectionValidation = /** @class */ (function () {
     SectionValidation.prototype.update = function () {
         return [
             (0, express_validator_1.check)("section.id", "Id is not valid.").exists().notEmpty().isString(),
-            (0, express_validator_1.check)("section.title", "Max: 20, Min: 3 symbols")
+            (0, express_validator_1.check)("section.title", "Max: 35, Min: 3 symbols")
                 .exists()
                 .notEmpty()
                 .isString()
                 .isLength({
-                max: 20,
+                max: 35,
                 min: 3,
             }),
             (0, express_validator_1.check)("section.content", "Content is not valid.")

@@ -11,18 +11,21 @@ export class SectionValidation {
 
   create() {
     return [
-      check("section.title", "Max: 20, Min: 3 symbols")
+      check("section.title", "Max: 35, Min: 3 symbols")
         .exists()
         .notEmpty()
         .isLength({
-          max: 20,
+          max: 35,
           min: 3,
         })
         .isString(),
-      check("section.content", "Content is not valid.").exists().notEmpty().isLength({
-        max: 1000000,
-        min: 3,
-      }),
+      check("section.content", "Content is not valid.")
+        .exists()
+        .notEmpty()
+        .isLength({
+          max: 1000000,
+          min: 3,
+        }),
       check("section.templateId", "Template id is not valid.")
         .exists()
         .notEmpty()
@@ -55,12 +58,12 @@ export class SectionValidation {
   update() {
     return [
       check("section.id", "Id is not valid.").exists().notEmpty().isString(),
-      check("section.title", "Max: 20, Min: 3 symbols")
+      check("section.title", "Max: 35, Min: 3 symbols")
         .exists()
         .notEmpty()
         .isString()
         .isLength({
-          max: 20,
+          max: 35,
           min: 3,
         }),
       check("section.content", "Content is not valid.")

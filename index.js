@@ -2,20 +2,20 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var dotenv_1 = require("dotenv");
 (0, dotenv_1.config)();
-var cookie_parser_1 = require("cookie-parser");
+var cookieParser = require("cookie-parser");
 var express = require("express");
 var cors = require("cors");
 var routes_1 = require("./routes");
-var app = express.default();
+var app = express();
 app.use(express.json());
 var corsOptions = {
-    origin: process.env.FRONTEND,
+    origin: process.env.FRONTEND_DEV,
     credentials: true,
     methods: "GET,PUT,POST,OPTIONS,DELETE,PATCH",
     allowedHeaders: "Content-Type,Authorization",
 };
-app.use(cors.default(corsOptions));
-app.use((0, cookie_parser_1.default)());
+app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use("/templates", routes_1.templateRouter);
 app.use("/sections", routes_1.sectionRouter);
 app.use("/section-palceholders", routes_1.sectionPlaceholderRouter);

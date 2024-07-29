@@ -29,6 +29,6 @@ export class TemplateValidation {
   }
 
   delete() {
-    return [param("template.id", "Id is not valid.").exists().notEmpty().isString()];
+    return [param("id", "Id is not valid.").exists().notEmpty().isString()];
   }
 }

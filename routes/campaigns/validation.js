@@ -16,7 +16,7 @@ var CampaignValidation = /** @class */ (function () {
                 .notEmpty()
                 .isString()
                 .isLength({
-                max: 20,
+                max: 35,
                 min: 3,
             }),
             (0, express_validator_1.check)(messages_1.campaign_validation_keys.templateId, messages_1.campaign_validation_messages[messages_1.campaign_validation_keys.templateId])

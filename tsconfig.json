@@ -7,7 +7,7 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
+    "esModuleInterop": false,
     "experimentalDecorators": true,
     "sourceMap": true
   },

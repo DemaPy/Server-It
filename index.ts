@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 config();
-import cookieParser from "cookie-parser";
+import * as cookieParser from "cookie-parser";
 import * as express from "express";
 import * as cors from "cors";
 import {
@@ -14,7 +14,7 @@ import {
   componentPlaceholdersRouter,
   userRouter,
 } from "./routes";
-const app = express.default();
+const app = express();
 
 app.use(express.json());
 var corsOptions = {
@@ -23,7 +23,7 @@ var corsOptions = {
   methods: "GET,PUT,POST,OPTIONS,DELETE,PATCH",
   allowedHeaders: "Content-Type,Authorization",
 };
-app.use(cors.default(corsOptions));
+app.use(cors(corsOptions));
 app.use(cookieParser());
 
 app.use("/templates", templateRouter);

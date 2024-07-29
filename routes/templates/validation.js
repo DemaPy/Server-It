@@ -30,7 +30,7 @@ var TemplateValidation = /** @class */ (function () {
         ];
     };
     TemplateValidation.prototype.delete = function () {
-        return [(0, express_validator_1.param)("template.id", "Id is not valid.").exists().notEmpty().isString()];
+        return [(0, express_validator_1.param)("id", "Id is not valid.").exists().notEmpty().isString()];
     };
     return TemplateValidation;
 }());
