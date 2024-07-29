@@ -19,7 +19,7 @@ export class CampaignValidation {
         .notEmpty()
         .isString()
         .isLength({
-          max: 20,
+          max: 35,
           min: 3,
         }),
       check(

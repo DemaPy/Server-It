@@ -5,7 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "dev": "nodemon index.ts",
-    "build": "tsc index.ts"
+    "build": "tsc index.ts",
+    "db_init": "npx prisma migrate dev, npx prisma generate"
   },
   "keywords": [],
   "author": "",

@@ -18,7 +18,7 @@ const app = express.default();
 
 app.use(express.json());
 var corsOptions = {
-  origin: process.env.FRONTEND,
+  origin: process.env.FRONTEND_DEV,
   credentials: true,
   methods: "GET,PUT,POST,OPTIONS,DELETE,PATCH",
   allowedHeaders: "Content-Type,Authorization",
