@@ -9,7 +9,7 @@ var routes_1 = require("./routes");
 var app = express();
 app.use(express.json());
 var corsOptions = {
-    origin: process.env.FRONTEND_DEV,
+    origin: process.env.FRONTEND,
     credentials: true,
     methods: "GET,PUT,POST,OPTIONS,DELETE,PATCH",
     allowedHeaders: "Content-Type,Authorization",
