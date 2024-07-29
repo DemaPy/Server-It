@@ -166,7 +166,7 @@ var AuthController = /** @class */ (function () {
                         hashedPassword = _b.sent();
                         withHashedPassword = __assign(__assign({}, dto_1.userDTO), { password: hashedPassword });
                         return [4 /*yield*/, db_1.prisma.user.create({
-                                data: __assign(__assign({}, withHashedPassword), { role: client_1.Role.GUEST }),
+                                data: __assign(__assign({}, withHashedPassword), { role: client_1.Role.USER }),
                             })];
                     case 3:
                         _a = _b.sent(), password = _a.password, rest = __rest(_a, ["password"]);

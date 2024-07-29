@@ -111,7 +111,7 @@ export class AuthController {
       const { password, ...rest } = await prisma.user.create({
         data: {
           ...withHashedPassword,
-          role: Role.GUEST,
+          role: Role.USER,
         },
       });
 

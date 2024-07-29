@@ -16,14 +16,15 @@ authRouter.post(
   ],
   Controller.login
 );
-// authRouter.post(
-//   "/registration",
-//   [
-//     check("email", "Email is not valid").notEmpty().isEmail(),
-//     check("password", "Password is not valid.").notEmpty().isLength({
-//       min: 4,
-//       max: 10,
-//     }),
-//   ],
-//   Controller.registration
-// );
+
+authRouter.post(
+  "/registration",
+  [
+    check("email", "Email is not valid").notEmpty().isEmail(),
+    check("password", "Password is not valid.").notEmpty().isLength({
+      min: 4,
+      max: 10,
+    }),
+  ],
+  Controller.registration
+);

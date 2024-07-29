@@ -13,14 +13,10 @@ exports.authRouter.post("/login", [
         max: 20,
     }),
 ], Controller.login);
-// authRouter.post(
-//   "/registration",
-//   [
-//     check("email", "Email is not valid").notEmpty().isEmail(),
-//     check("password", "Password is not valid.").notEmpty().isLength({
-//       min: 4,
-//       max: 10,
-//     }),
-//   ],
-//   Controller.registration
-// );
+exports.authRouter.post("/registration", [
+    (0, express_validator_1.check)("email", "Email is not valid").notEmpty().isEmail(),
+    (0, express_validator_1.check)("password", "Password is not valid.").notEmpty().isLength({
+        min: 4,
+        max: 10,
+    }),
+], Controller.registration);
