@@ -205,7 +205,6 @@ var SectionController = /** @class */ (function () {
                         res.send({
                             status: "success",
                             message: "Section has been created.",
-                            data: createdSection_1,
                         });
                         return [3 /*break*/, 7];
                     case 6:

@@ -105,7 +105,7 @@ var TemplateController = /** @class */ (function () {
                         _a.trys.push([0, 2, , 3]);
                         errors = (0, express_validator_1.validationResult)(req);
                         if (!errors.isEmpty()) {
-                            return [2 /*return*/, res.status(400).send(__assign({ status: "error", message: "Validation error" }, errors))];
+                            return [2 /*return*/, res.status(400).send(__assign({ status: "error", message: "Validation errorsss" }, errors))];
                         }
                         id = req.params.id;
                         user = req.body.user;
@@ -132,7 +132,7 @@ var TemplateController = /** @class */ (function () {
                         res.send({
                             status: "success",
                             message: "Template has been found.",
-                            data: template
+                            data: template,
                         });
                         return [3 /*break*/, 3];
                     case 2:
@@ -171,7 +171,7 @@ var TemplateController = /** @class */ (function () {
                         res.send({
                             status: "success",
                             message: "Template has been created.",
-                            data: createdTemplate,
+                            data: { id: createdTemplate.id },
                         });
                         return [3 /*break*/, 3];
                     case 2:
@@ -181,13 +181,11 @@ var TemplateController = /** @class */ (function () {
                             return [2 /*return*/, res.status(400).send({
                                     status: "error",
                                     message: "Database write error",
-                                    data: req.body.template,
                                 })];
                         }
                         res.status(400).send({
                             status: "error",
                             message: error_3.message || "Template hasn't been created.",
-                            data: req.body.template,
                         });
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];
@@ -197,7 +195,7 @@ var TemplateController = /** @class */ (function () {
     };
     TemplateController.prototype.update = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var errors, user, template, isExist, updatedTemplate, error_4;
+            var errors, user, template, isExist, error_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -229,11 +227,10 @@ var TemplateController = /** @class */ (function () {
                                 },
                             })];
                     case 2:
-                        updatedTemplate = _a.sent();
+                        _a.sent();
                         res.send({
                             status: "success",
                             message: "Template has been updated.",
-                            data: updatedTemplate,
                         });
                         return [3 /*break*/, 4];
                     case 3:
@@ -241,7 +238,6 @@ var TemplateController = /** @class */ (function () {
                         res.status(400).send({
                             status: "error",
                             message: error_4.message || "Template hasn't been updated.",
-                            data: req.body.template,
                         });
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -251,7 +247,7 @@ var TemplateController = /** @class */ (function () {
     };
     TemplateController.prototype.delete = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var errors, id, user, deletedTemplate, error_5;
+            var errors, id, user, error_5;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -269,11 +265,10 @@ var TemplateController = /** @class */ (function () {
                                 },
                             })];
                     case 1:
-                        deletedTemplate = _a.sent();
+                        _a.sent();
                         res.send({
                             status: "success",
                             message: "Template has been deleted.",
-                            data: deletedTemplate,
                         });
                         return [3 /*break*/, 3];
                     case 2:
@@ -281,7 +276,6 @@ var TemplateController = /** @class */ (function () {
                         res.status(400).send({
                             status: "error",
                             message: error_5.message || "Template hasn't been deleted.",
-                            data: { id: req.params.id },
                         });
                         return [3 /*break*/, 3];
                     case 3: return [2 /*return*/];

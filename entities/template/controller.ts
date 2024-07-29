@@ -43,7 +43,7 @@ export class TemplateController implements Controller {
       if (!errors.isEmpty()) {
         return res.status(400).send({
           status: "error",
-          message: "Validation error",
+          message: "Validation errorsss",
           ...errors,
         });
       }
@@ -71,7 +71,7 @@ export class TemplateController implements Controller {
       res.send({
         status: "success",
         message: "Template has been found.",
-        data: template
+        data: template,
       });
     } catch (error) {
       res.status(400).send({
@@ -103,7 +103,7 @@ export class TemplateController implements Controller {
       res.send({
         status: "success",
         message: "Template has been created.",
-        data: createdTemplate,
+        data: { id: createdTemplate.id },
       });
     } catch (error) {
       console.log(error);
@@ -111,13 +111,11 @@ export class TemplateController implements Controller {
         return res.status(400).send({
           status: "error",
           message: "Database write error",
-          data: req.body.template,
         });
       }
       res.status(400).send({
         status: "error",
         message: error.message || "Template hasn't been created.",
-        data: req.body.template,
       });
     }
   }
@@ -146,7 +144,7 @@ export class TemplateController implements Controller {
         throw new Error("Template doesn't exist.");
       }
 
-      const updatedTemplate = await prisma.template.update({
+      await prisma.template.update({
         where: {
           id: template.id,
           userId: user.id,
@@ -158,13 +156,11 @@ export class TemplateController implements Controller {
       res.send({
         status: "success",
         message: "Template has been updated.",
-        data: updatedTemplate,
       });
     } catch (error) {
       res.status(400).send({
         status: "error",
         message: error.message || "Template hasn't been updated.",
-        data: req.body.template,
       });
     }
   }
@@ -182,7 +178,7 @@ export class TemplateController implements Controller {
       const { id } = req.params;
       const user: UserToken = req.body.user;
 
-      const deletedTemplate = await prisma.template.delete({
+      await prisma.template.delete({
         where: {
           id: id,
           userId: user.id,
@@ -191,13 +187,11 @@ export class TemplateController implements Controller {
       res.send({
         status: "success",
         message: "Template has been deleted.",
-        data: deletedTemplate,
       });
     } catch (error) {
       res.status(400).send({
         status: "error",
         message: error.message || "Template hasn't been deleted.",
-        data: { id: req.params.id },
       });
     }
   }

@@ -154,7 +154,6 @@ export class SectionController implements Controller {
       res.send({
         status: "success",
         message: "Section has been created.",
-        data: createdSection,
       });
     } catch (error) {
       console.log(error);
