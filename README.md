@@ -1,7 +1,6 @@
 # Server-It
 
-### Step 1
-Install dependencies
+### Install dependencies
 npm run install
 
 ### Provide environment variables
