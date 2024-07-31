@@ -54,7 +54,6 @@ var placeholdersComponentDTO_1 = require("../../middlewares/DTOS/placeholdersCom
 var library_1 = require("@prisma/client/runtime/library");
 var guard_1 = require("../../middlewares/guard");
 var dto_1 = require("./dto");
-var html_entities_1 = require("html-entities");
 var jsdom = require("jsdom");
 var validation_1 = require("./validation");
 var express_validator_1 = require("express-validator");
@@ -189,7 +188,7 @@ exports.componentPlaceholdersRouter.delete("/:id", guard_1.MIDDLEWARES.user, fun
                             id: component.id,
                         },
                         data: {
-                            content: (0, html_entities_1.decode)(new_content),
+                            content: new_content,
                         },
                     })];
             case 3:

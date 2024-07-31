@@ -53,7 +53,6 @@ var db_1 = require("../../db");
 var placeholderSectionsDTO_1 = require("../../middlewares/DTOS/placeholderSectionsDTO");
 var guard_1 = require("../../middlewares/guard");
 var dto_1 = require("./dto");
-var html_entities_1 = require("html-entities");
 var jsdom = require("jsdom");
 var validation_1 = require("./validation");
 var express_validator_1 = require("express-validator");
@@ -197,7 +196,7 @@ exports.sectionPlaceholderRouter.delete("/:id", guard_1.MIDDLEWARES.user, functi
                             id: section.id,
                         },
                         data: {
-                            content: (0, html_entities_1.decode)(new_content),
+                            content: new_content,
                         },
                     })];
             case 3:

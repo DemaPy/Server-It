@@ -124,7 +124,7 @@ componentPlaceholdersRouter.delete(
         },
       });
       console.log(placeholder, id);
-      
+
       if (!placeholder) {
         throw new Error("Placeholder doesn't exist.");
       }
@@ -148,7 +148,7 @@ componentPlaceholdersRouter.delete(
           id: component.id,
         },
         data: {
-          content: decode(new_content),
+          content: new_content,
         },
       });
 

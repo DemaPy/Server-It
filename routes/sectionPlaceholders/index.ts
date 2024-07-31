@@ -153,7 +153,7 @@ sectionPlaceholderRouter.delete(
           id: section.id,
         },
         data: {
-          content: decode(new_content),
+          content: new_content,
         },
       });
 
