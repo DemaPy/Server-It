@@ -22,6 +22,9 @@ export class TemplateController implements Controller {
           where: {
             userId: user.id,
           },
+          include: {
+            sections: true,
+          },
         });
       }
       res.send({
