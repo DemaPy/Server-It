@@ -23,7 +23,11 @@ export class TemplateController implements Controller {
             userId: user.id,
           },
           include: {
-            sections: true,
+            sections: {
+              include: {
+                placeholders: true
+              }
+            },
           },
         });
       }
