@@ -15,13 +15,11 @@ export class UpdateComponentDTO {
   id: Component["id"];
   title: Component["title"];
   content: Component["content"];
-  placeholdersToDelete: ComponentPlaceholder[];
-  placeholdersToCreate: ComponentPlaceholder[];
+  placeholders: ComponentPlaceholder[];
   constructor(data: any) {
     this.id = data.id;
     this.title = data.title;
     this.content = data.content;
-    this.placeholdersToDelete = data.placeholdersToDelete;
-    this.placeholdersToCreate = data.placeholdersToCreate;
+    this.placeholders = data.placeholders;
   }
 }

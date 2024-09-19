@@ -32,14 +32,12 @@ export class UpdateSectionDTO {
   title: Section["title"];
   content: Section["content"];
   templateId: Section["templateId"];
-  placeholdersToDelete: SectionPlaceholder[];
-  placeholdersToCreate: SectionPlaceholder[];
+  placeholders: SectionPlaceholder[];
   constructor(data: any) {
     this.id = data.id;
     this.title = data.title;
     this.content = data.content;
     this.templateId = data.templateId;
-    this.placeholdersToDelete = data.placeholdersToDelete;
-    this.placeholdersToCreate = data.placeholdersToCreate;
+    this.placeholders = data.placeholders;
   }
 }

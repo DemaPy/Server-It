@@ -93,6 +93,7 @@ export class ComponentController implements Controller {
       }
       const user: User = req.body.user;
       const component: CreateComponentDTO = req.body.component;
+      
       let createdComponent = await prisma.component.create({
         data: {
           title: component.title,
@@ -147,6 +148,14 @@ export class ComponentController implements Controller {
         throw new Error("Component not found.");
       }
 
+      await prisma.componentPlaceholder.deleteMany({
+        where: {
+          id: {
+            in: isComponentExist.placeholders.map((item) => item.id),
+          },
+        },
+      });
+
       await prisma.component.update({
         where: {
           id: isComponentExist.id,
@@ -155,13 +164,8 @@ export class ComponentController implements Controller {
           title: component.title,
           content: component.content,
           placeholders: {
-            deleteMany: {
-              id: {
-                in: component.placeholdersToDelete.map((item) => item.id),
-              },
-            },
             createMany: {
-              data: component.placeholdersToCreate,
+              data: component.placeholders,
             },
           },
         },

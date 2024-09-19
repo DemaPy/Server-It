@@ -208,29 +208,10 @@ export class SectionController implements Controller {
         throw new Error("Component doesn't exist.");
       }
 
-      // generate placeholders with new id,
-      // update placeholder id in content
-      const dom = new jsdom.JSDOM(component.content);
-      const body = dom.window.document.body;
-
-      const section_placeholders = component.placeholders.map((item) => {
-        const id = uuidv4();
-        const placeholder_to_change = body.querySelector(
-          `[data-template-it_id='${item.id}']`
-        );
-        placeholder_to_change.setAttribute("data-template-it_id", id);
-        return {
-          id: id,
-          fallback: item.fallback,
-          title: item.title,
-        };
-      });
-      const new_content = body.innerHTML;
-
       let createdSection = await prisma.section.create({
         data: {
           title: "Copied: " + component.title,
-          content: new_content,
+          content: component.content,
           templateId: section.templateId,
           order:
             template.sections.length <= 1
@@ -238,7 +219,7 @@ export class SectionController implements Controller {
               : template.sections.length - 1,
           placeholders: {
             createMany: {
-              data: section_placeholders,
+              data: component.placeholders,
             },
           },
         },
@@ -271,7 +252,6 @@ export class SectionController implements Controller {
       res.send({
         status: "success",
         message: "Section has been created.",
-        data: createdSection,
       });
     } catch (error) {
       console.log(error);
@@ -364,6 +344,15 @@ export class SectionController implements Controller {
       if (!isSectionExist) {
         throw new Error("Section not found.");
       }
+
+      await prisma.sectionPlaceholder.deleteMany({
+        where: {
+          id: {
+            in: isSectionExist.placeholders.map((item) => item.id),
+          },
+        },
+      });
+
       await prisma.section.update({
         where: {
           id: isSectionExist.id,
@@ -372,18 +361,10 @@ export class SectionController implements Controller {
           title: section.title,
           content: section.content,
           placeholders: {
-            deleteMany: {
-              id: {
-                in: section.placeholdersToDelete.map((item) => item.id),
-              },
-            },
             createMany: {
-              data: section.placeholdersToCreate,
+              data: section.placeholders,
             },
           },
-        },
-        include: {
-          placeholders: true,
         },
       });
 

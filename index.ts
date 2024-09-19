@@ -10,8 +10,6 @@ import {
   authRouter,
   campaignRouter,
   layoutRouter,
-  sectionPlaceholderRouter,
-  componentPlaceholdersRouter,
   userRouter,
 } from "./routes";
 const app = express();
@@ -28,14 +26,9 @@ app.use(cookieParser());
 
 app.use("/templates", templateRouter);
 app.use("/sections", sectionRouter);
-app.use("/section-palceholders", sectionPlaceholderRouter);
-
 app.use("/components", componentRouter);
-app.use("/component-palceholders", componentPlaceholdersRouter);
-
 app.use("/campaigns", campaignRouter);
 app.use("/layouts", layoutRouter);
-
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
 
