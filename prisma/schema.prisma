@@ -9,10 +9,11 @@ datasource db {
 
 model User {
   id        String      @id @default(uuid())
-  name      String?
-  email     String      @unique
+  name      String      @db.VarChar(40)
+  username  String      @unique @db.VarChar(100)
+  email     String      @unique @db.VarChar(40)
   role      Role        @default(USER)
-  password  String
+  password  String      @db.VarChar(40)
   campaigns Campaign[]
   templates Template[]
   Component Component[]
