@@ -1,6 +1,4 @@
-import { Request, Response } from "express";
-import { ParamsDictionary } from "express-serve-static-core";
-import { ParsedQs } from "qs";
+import { NextFunction, Request, Response } from "express";
 import { Controller } from "../type";
 import { UserToken } from "../auth/controller";
 import { prisma } from "../../db";
@@ -18,8 +16,9 @@ import {
 
 export class CampaignController implements Controller {
   async create(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -79,16 +78,14 @@ export class CampaignController implements Controller {
         data: { ...createdCampaign, layout: createdLayouts },
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Campaign hasn't been created.",
-      });
+      next(error)
     }
   }
 
   async createData(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -189,16 +186,14 @@ export class CampaignController implements Controller {
         message: "Campaign data has been created.",
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Campaign data hasn't been created.",
-      });
+      next(error)
     }
   }
 
   async deleteData(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -224,16 +219,14 @@ export class CampaignController implements Controller {
         data: deletedCampaign,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Campaign hasn't been deleted.",
-      });
+      next(error)
     }
   }
 
   async delete(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -259,16 +252,14 @@ export class CampaignController implements Controller {
         data: deletedCampaign,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Campaign hasn't been deleted.",
-      });
+      next(error)
     }
   }
 
   async update(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -297,22 +288,14 @@ export class CampaignController implements Controller {
         data: updatedCampaign,
       });
     } catch (error) {
-      if (error instanceof PrismaClientValidationError) {
-        return res.status(400).send({
-          status: "error",
-          message: error.message,
-        });
-      }
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Campaign hasn't been updated.",
-      });
+      next(error)
     }
   }
 
   async getAll(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response,
+    next: NextFunction
   ) {
     try {
       const user: UserToken = req.body.user;
@@ -330,16 +313,14 @@ export class CampaignController implements Controller {
         data: campaigns,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Something went wrong",
-      });
+      next(error)
     }
   }
 
   async getOne(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -380,10 +361,7 @@ export class CampaignController implements Controller {
         data: campaign,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Something went wrong",
-      });
+      next(error)
     }
   }
 }

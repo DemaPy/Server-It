@@ -1,6 +1,5 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { prisma } from "../../db";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { validationResult } from "express-validator";
 import {
   CreateTemplateDTO,
@@ -10,7 +9,7 @@ import { Controller } from "../type";
 import { UserToken } from "../auth/controller";
 
 export class TemplateController implements Controller {
-  async getAll(req: Request, res: Response) {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const user: UserToken = req.body.user;
       const isManager = user.role === "PROJECT_MANAGER";
@@ -37,14 +36,11 @@ export class TemplateController implements Controller {
         data: templates,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Something went wrong",
-      });
+      next(error)
     }
   }
 
-  async getOne(req: Request, res: Response) {
+  async getOne(req: Request, res: Response, next: NextFunction) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -81,14 +77,11 @@ export class TemplateController implements Controller {
         data: template,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Something went wrong",
-      });
+      next(error)
     }
   }
 
-  async create(req: Request, res: Response) {
+  async create(req: Request, res: Response, next: NextFunction) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -113,21 +106,11 @@ export class TemplateController implements Controller {
         data: { id: createdTemplate.id },
       });
     } catch (error) {
-      console.log(error);
-      if (error instanceof PrismaClientKnownRequestError) {
-        return res.status(400).send({
-          status: "error",
-          message: "Database write error",
-        });
-      }
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Template hasn't been created.",
-      });
+      next(error)
     }
   }
 
-  async update(req: Request, res: Response) {
+  async update(req: Request, res: Response, next: NextFunction) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -165,14 +148,11 @@ export class TemplateController implements Controller {
         message: "Template has been updated.",
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Template hasn't been updated.",
-      });
+      next(error)
     }
   }
 
-  async delete(req: Request, res: Response) {
+  async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -196,10 +176,7 @@ export class TemplateController implements Controller {
         message: "Template has been deleted.",
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Template hasn't been deleted.",
-      });
+      next(error)
     }
   }
 }

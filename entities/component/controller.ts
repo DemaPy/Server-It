@@ -1,8 +1,6 @@
 import { prisma } from "../../db";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { Controller } from "../type";
-import { ParamsDictionary } from "express-serve-static-core";
-import { ParsedQs } from "qs";
 import {
   CreateComponentDTO,
   UpdateComponentDTO,
@@ -11,7 +9,7 @@ import { validationResult } from "express-validator";
 import { User } from "@prisma/client";
 
 export class ComponentController implements Controller {
-  async getAll(req: Request, res: Response) {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const user: User = req.body.user;
       const components = await prisma.component.findMany({
@@ -28,18 +26,14 @@ export class ComponentController implements Controller {
         data: components,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Something went wrong",
-        error: error,
-        data: null,
-      });
+      next(error);
     }
   }
 
   async getOne(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response<any, Record<string, any>>,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -71,16 +65,14 @@ export class ComponentController implements Controller {
         data: component,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Something went wrong",
-      });
+      next(error);
     }
   }
 
   async create(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response<any, Record<string, any>>,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -93,7 +85,7 @@ export class ComponentController implements Controller {
       }
       const user: User = req.body.user;
       const component: CreateComponentDTO = req.body.component;
-      
+
       let createdComponent = await prisma.component.create({
         data: {
           title: component.title,
@@ -111,16 +103,14 @@ export class ComponentController implements Controller {
         data: createdComponent,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Component hasn't been created.",
-      });
+      next(error);
     }
   }
 
   async update(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response<any, Record<string, any>>,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -179,18 +169,14 @@ export class ComponentController implements Controller {
         message: "Component has been updated.",
       });
     } catch (error) {
-      console.log(error);
-
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Component has not been updated.",
-      });
+      next(error);
     }
   }
 
   async delete(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response<any, Record<string, any>>,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -216,10 +202,7 @@ export class ComponentController implements Controller {
         data: deletedComponent,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Component hasn't been deleted.",
-      });
+      next(error);
     }
   }
 }

@@ -12,6 +12,7 @@ import {
   layoutRouter,
   userRouter,
 } from "./routes";
+import { handlePrismaError, logErrors } from "./middlewares/errorHandling";
 const app = express();
 
 app.use(express.json());
@@ -31,6 +32,9 @@ app.use("/campaigns", campaignRouter);
 app.use("/layouts", layoutRouter);
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
+
+app.use(logErrors)
+app.use(handlePrismaError)
 
 const PORT = process.env.PORT || 6666;
 app.listen(PORT, () => {

@@ -1,13 +1,7 @@
-import { Request, Response } from "express";
-import { ParamsDictionary } from "express-serve-static-core";
-import { ParsedQs } from "qs";
+import { NextFunction, Request, Response } from "express";
 import { Controller } from "../type";
 import { prisma } from "../../db";
 import { User } from "@prisma/client";
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientValidationError,
-} from "@prisma/client/runtime/library";
 import { validationResult } from "express-validator";
 import {
   CreateSectionDTO,
@@ -20,8 +14,9 @@ import * as jsdom from "jsdom";
 
 export class SectionController implements Controller {
   async delete(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response<any, Record<string, any>>,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -77,17 +72,14 @@ export class SectionController implements Controller {
         message: "Section has been deleted.",
       });
     } catch (error) {
-      console.log(error);
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Section has not been deleted.",
-      });
+      next(error)
     }
   }
 
   async create(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response<any, Record<string, any>>,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -156,23 +148,14 @@ export class SectionController implements Controller {
         message: "Section has been created.",
       });
     } catch (error) {
-      console.log(error);
-      if (error instanceof PrismaClientValidationError) {
-        return res.status(400).send({
-          status: "error",
-          message: error.message,
-        });
-      }
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Section hasn't been created.",
-      });
+      next(error)
     }
   }
 
   async createFromComponent(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response<any, Record<string, any>>,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -254,29 +237,19 @@ export class SectionController implements Controller {
         message: "Section has been created.",
       });
     } catch (error) {
-      console.log(error);
-
-      if (error instanceof PrismaClientValidationError) {
-        return res.status(400).send({
-          status: "error",
-          message: error.message || "Section hasn't been created.",
-        });
-      }
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Section hasn't been created.",
-      });
+      next(error)
     }
   }
 
   async getAll(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
+    req: Request,
     res: Response<any, Record<string, any>>
   ) {}
 
   async getOne(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response<any, Record<string, any>>,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -305,16 +278,14 @@ export class SectionController implements Controller {
         data: section,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Something went wrong",
-      });
+      next(error)
     }
   }
 
   async update(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response<any, Record<string, any>>,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -373,18 +344,14 @@ export class SectionController implements Controller {
         message: "Section has been updated.",
       });
     } catch (error) {
-      console.log(error);
-
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Section hasn't been updated.",
-      });
+      next(error)
     }
   }
 
   async duplicate(
-    req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>,
-    res: Response<any, Record<string, any>>
+    req: Request,
+    res: Response<any, Record<string, any>>,
+    next: NextFunction
   ) {
     try {
       const errors = validationResult(req);
@@ -485,18 +452,7 @@ export class SectionController implements Controller {
         message: "Section has been duplicated.",
       });
     } catch (error) {
-      console.log(error);
-      if (error instanceof PrismaClientKnownRequestError) {
-        return res.status(400).send({
-          status: "error",
-          message: error.meta.cause || "Section has not been duplicated.",
-        });
-      }
-
-      res.status(400).send({
-        status: "error",
-        message: error.message || "Section has not been duplicated.",
-      });
+      next(error)
     }
   }
 }
