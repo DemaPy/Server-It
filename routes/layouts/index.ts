@@ -1,8 +1,7 @@
-import { Router } from "express";
+import { NextFunction, Router } from "express";
 import { Request, Response } from "express";
 import { prisma } from "../../db";
 import { layoutDTO } from "../../middlewares/DTOS/layoutDTO";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { UpdateLayoutDTO, UpdateLayoutsOrderDTO } from "./dto";
 import { check, validationResult } from "express-validator";
 import { MIDDLEWARES } from "../../middlewares/guard";
@@ -13,7 +12,7 @@ layoutRouter.patch(
   "/",
   MIDDLEWARES.user,
   layoutDTO(UpdateLayoutDTO),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const layout: UpdateLayoutDTO = req.body.layout;
 
@@ -41,18 +40,7 @@ layoutRouter.patch(
         data: updatedLayout,
       });
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        res.status(422).send({
-          status: "error",
-          message: error?.meta?.cause,
-        });
-        return;
-      }
-
-      res.status(400).send({
-        status: "error",
-        message: error.message,
-      });
+      next(error);
     }
   }
 );
@@ -66,7 +54,7 @@ layoutRouter.patch(
     }),
   ],
   layoutDTO(UpdateLayoutsOrderDTO),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -112,26 +100,7 @@ layoutRouter.patch(
         },
       });
     } catch (error) {
-      console.log(error);
-      if (error instanceof Error) {
-        return res.status(400).send({
-          status: "error",
-          message: error.message,
-        });
-      }
-
-      if (error instanceof PrismaClientKnownRequestError) {
-        res.status(422).send({
-          status: "error",
-          message: error?.meta?.cause,
-        });
-        return;
-      }
-
-      res.status(400).send({
-        status: "error",
-        message: error.meta?.cause,
-      });
+      next(error);
     }
   }
 );
@@ -139,7 +108,7 @@ layoutRouter.patch(
 layoutRouter.delete(
   "/:id",
   MIDDLEWARES.user,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
       const deletedLayout = await prisma.layout.delete({
@@ -153,10 +122,7 @@ layoutRouter.delete(
         data: deletedLayout,
       });
     } catch (error) {
-      res.status(400).send({
-        status: "error",
-        message: "Layout hasn't been deleted.",
-      });
+      next(error);
     }
   }
 );

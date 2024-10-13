@@ -11,7 +11,6 @@ import {
 } from "../../routes/campaigns/dto";
 import {
   JsonObject,
-  PrismaClientValidationError,
 } from "@prisma/client/runtime/library";
 
 export class CampaignController implements Controller {
