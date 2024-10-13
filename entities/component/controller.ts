@@ -138,31 +138,27 @@ export class ComponentController implements Controller {
         throw new Error("Component not found.");
       }
 
-      await prisma.componentPlaceholder.deleteMany({
-        where: {
-          id: {
-            in: isComponentExist.placeholders.map((item) => item.id),
-          },
-        },
-      });
-
       await prisma.component.update({
         where: {
-          id: isComponentExist.id,
+          id: component.id,
         },
         data: {
           title: component.title,
           content: component.content,
-          placeholders: {
-            createMany: {
-              data: component.placeholders,
-            },
-          },
         },
         include: {
           placeholders: true,
         },
       });
+
+      for (const placeholder of component.placeholders) {
+        await prisma.componentPlaceholder.update({
+          where: {
+            id: placeholder.id,
+          },
+          data: placeholder,
+        });
+      }
 
       res.send({
         status: "success",

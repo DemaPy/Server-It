@@ -9,8 +9,6 @@ import {
   UpdateSectionDTO,
 } from "../../routes/sections/dto";
 import { isTemplateExist } from "../../utils/helper";
-import { v4 as uuidv4 } from "uuid";
-import * as jsdom from "jsdom";
 
 export class SectionController implements Controller {
   async delete(
@@ -72,7 +70,7 @@ export class SectionController implements Controller {
         message: "Section has been deleted.",
       });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
@@ -148,7 +146,7 @@ export class SectionController implements Controller {
         message: "Section has been created.",
       });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
@@ -184,7 +182,12 @@ export class SectionController implements Controller {
           userId: user.id,
         },
         include: {
-          placeholders: true,
+          placeholders: {
+            select: {
+              title: true,
+              fallback: true,
+            },
+          },
         },
       });
       if (!component) {
@@ -237,14 +240,11 @@ export class SectionController implements Controller {
         message: "Section has been created.",
       });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-  async getAll(
-    req: Request,
-    res: Response<any, Record<string, any>>
-  ) {}
+  async getAll(req: Request, res: Response<any, Record<string, any>>) {}
 
   async getOne(
     req: Request,
@@ -278,7 +278,7 @@ export class SectionController implements Controller {
         data: section,
       });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
@@ -316,35 +316,31 @@ export class SectionController implements Controller {
         throw new Error("Section not found.");
       }
 
-      await prisma.sectionPlaceholder.deleteMany({
-        where: {
-          id: {
-            in: isSectionExist.placeholders.map((item) => item.id),
-          },
-        },
-      });
-
       await prisma.section.update({
         where: {
-          id: isSectionExist.id,
+          id: section.id,
         },
         data: {
           title: section.title,
           content: section.content,
-          placeholders: {
-            createMany: {
-              data: section.placeholders,
-            },
-          },
         },
       });
+
+      for (const placeholder of section.placeholders) {
+        await prisma.sectionPlaceholder.update({
+          where: {
+            id: placeholder.id,
+          },
+          data: placeholder,
+        });
+      }
 
       res.send({
         status: "success",
         message: "Section has been updated.",
       });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
@@ -370,7 +366,12 @@ export class SectionController implements Controller {
           id: id,
         },
         include: {
-          placeholders: true,
+          placeholders: {
+            select: {
+              title: true,
+              fallback: true,
+            },
+          },
         },
       });
 
@@ -400,31 +401,10 @@ export class SectionController implements Controller {
         },
       });
 
-      // generate placeholders with new id,
-      // update placeholder id in content
-      const dom = new jsdom.JSDOM(sectionToDuplicate.content);
-      const body = dom.window.document.body;
-
-      const section_placeholders = sectionToDuplicate.placeholders.map(
-        (item) => {
-          const id = uuidv4();
-          const placeholder_to_change = body.querySelector(
-            `[data-template-it_id='${item.id}']`
-          );
-          placeholder_to_change.setAttribute("data-template-it_id", id);
-          return {
-            id: id,
-            fallback: item.fallback,
-            title: item.title,
-          };
-        }
-      );
-      const new_content = body.innerHTML;
-
       await prisma.section.create({
         data: {
-          title: sectionToDuplicate.title + " copy",
-          content: new_content,
+          title: sectionToDuplicate.title,
+          content: sectionToDuplicate.content,
           templateId: sectionToDuplicate.templateId,
           Layout: {
             createMany: {
@@ -440,7 +420,7 @@ export class SectionController implements Controller {
           },
           placeholders: {
             createMany: {
-              data: section_placeholders,
+              data: sectionToDuplicate.placeholders,
             },
           },
           order: template.sections.length,
@@ -452,7 +432,7 @@ export class SectionController implements Controller {
         message: "Section has been duplicated.",
       });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 }
