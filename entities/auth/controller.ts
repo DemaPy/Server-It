@@ -4,6 +4,7 @@ import { userDTO } from "../user/dto";
 import * as bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
 import * as jwt from "jsonwebtoken";
+import { NextFunction, Request, Response } from "express";
 
 export type UserToken = {
   id: User["id"];
@@ -24,7 +25,7 @@ const generateAccessToken = (data: UserToken) => {
 const saltRounds = 10;
 
 export class AuthController {
-  async login(req, res) {
+  async login(req: Request, res: Response, next: NextFunction) {
     try {
       // Check if data to login user is exists
       const errors = validationResult(req);
@@ -65,14 +66,11 @@ export class AuthController {
       // res.cookie("accessToken", token, {maxAge: 3600, httpOnly: true})
       return res.json({ status: "success", data: { token } });
     } catch (error) {
-      return res.status(400).json({
-        status: "error",
-        message: error.message || "An error occurred",
-      });
+      next(error);
     }
   }
 
-  async registration(req, res) {
+  async registration(req: Request, res: Response, next: NextFunction) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -112,6 +110,8 @@ export class AuthController {
         data: {
           ...withHashedPassword,
           role: Role.USER,
+          username: "dema",
+          name: "dema",
         },
       });
 
@@ -120,7 +120,7 @@ export class AuthController {
         .status(200)
         .json({ data: "Blocked to register new user.", status: "success" });
     } catch (error) {
-      return res.status(400).json({ status: "error", message: error.message });
+      next(error);
     }
   }
 }

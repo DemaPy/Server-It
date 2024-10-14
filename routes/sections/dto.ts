@@ -9,7 +9,7 @@ export class CreateSectionDTO {
   content: Section["content"];
   title: Section["title"];
   templateId: Section["templateId"];
-  placeholders: SectionPlaceholder[];
+  placeholders: Pick<SectionPlaceholder, "fallback" | "title">[];
   constructor(data: any) {
     this.title = data.title;
     this.templateId = data.templateId;
@@ -32,7 +32,9 @@ export class UpdateSectionDTO {
   title: Section["title"];
   content: Section["content"];
   templateId: Section["templateId"];
-  placeholders: SectionPlaceholder[];
+  placeholders:
+    | Pick<SectionPlaceholder, "fallback" | "title">[]
+    | SectionPlaceholder[];
   constructor(data: any) {
     this.id = data.id;
     this.title = data.title;

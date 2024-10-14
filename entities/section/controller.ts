@@ -110,10 +110,7 @@ export class SectionController implements Controller {
             },
           },
           templateId: section.templateId,
-          order:
-            template.sections.length <= 1
-              ? template.sections.length
-              : template.sections.length - 1,
+          order: template.sections.length === 0 ? 0 : template.sections.length,
         },
       });
 
@@ -199,10 +196,7 @@ export class SectionController implements Controller {
           title: "Copied: " + component.title,
           content: component.content,
           templateId: section.templateId,
-          order:
-            template.sections.length <= 1
-              ? template.sections.length
-              : template.sections.length - 1,
+          order: template.sections.length === 0 ? 0 : template.sections.length,
           placeholders: {
             createMany: {
               data: component.placeholders,
@@ -327,12 +321,21 @@ export class SectionController implements Controller {
       });
 
       for (const placeholder of section.placeholders) {
-        await prisma.sectionPlaceholder.update({
-          where: {
-            id: placeholder.id,
-          },
-          data: placeholder,
-        });
+        if ("id" in placeholder) {
+          await prisma.sectionPlaceholder.update({
+            where: {
+              id: placeholder.id,
+            },
+            data: placeholder,
+          });
+        } else {
+          await prisma.sectionPlaceholder.create({
+            data: {
+              ...placeholder,
+              sectionId: section.id
+            },
+          });
+        }
       }
 
       res.send({
