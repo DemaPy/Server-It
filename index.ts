@@ -1,6 +1,7 @@
 import { config } from "dotenv";
 config();
 import * as cookieParser from "cookie-parser";
+import * as bodyParser from "body-parser";
 import * as express from "express";
 import * as cors from "cors";
 import {
@@ -15,7 +16,6 @@ import {
 import { handlePrismaError, logErrors } from "./middlewares/errorHandling";
 const app = express();
 
-app.use(express.json());
 var corsOptions = {
   origin: process.env.FRONTEND_DEV,
   credentials: true,
@@ -24,6 +24,7 @@ var corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(cookieParser());
+app.use(express.json({ limit: "10mb" }));
 
 app.use("/templates", templateRouter);
 app.use("/sections", sectionRouter);

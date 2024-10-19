@@ -152,12 +152,21 @@ export class ComponentController implements Controller {
       });
 
       for (const placeholder of component.placeholders) {
-        await prisma.componentPlaceholder.update({
-          where: {
-            id: placeholder.id,
-          },
-          data: placeholder,
-        });
+        if ("id" in placeholder) {
+          await prisma.componentPlaceholder.update({
+            where: {
+              id: placeholder.id,
+            },
+            data: placeholder,
+          });
+        } else {
+          await prisma.componentPlaceholder.create({
+            data: {
+              ...placeholder,
+              componentId: component.id
+            },
+          });
+        }
       }
 
       res.send({
