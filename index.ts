@@ -33,10 +33,12 @@ app.use("/layouts", layoutRouter);
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
 
-app.use(logErrors)
-app.use(handlePrismaError)
+app.use(logErrors);
+app.use(handlePrismaError);
 
 const PORT = process.env.PORT || 6666;
 app.listen(PORT, () => {
   console.log("Server started at port:", PORT);
 });
+
+export default app;

@@ -11,6 +11,6 @@
     "experimentalDecorators": true,
     "sourceMap": true
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "./app/*.ts"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }
