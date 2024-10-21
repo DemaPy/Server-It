@@ -1,10 +1,10 @@
-import { config } from "dotenv";
+const { config } = require("dotenv");
 config();
-import * as cookieParser from "cookie-parser";
-import * as bodyParser from "body-parser";
-import * as express from "express";
-import * as cors from "cors";
-import {
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
+const express = require("express");
+const cors = require("cors");
+const {
   templateRouter,
   sectionRouter,
   componentRouter,
@@ -12,8 +12,8 @@ import {
   campaignRouter,
   layoutRouter,
   userRouter,
-} from "./routes";
-import { handlePrismaError, logErrors } from "./middlewares/errorHandling";
+} = require("./routes");
+const { handlePrismaError, logErrors } = require("./middlewares/errorHandling");
 const app = express();
 
 var corsOptions = {
@@ -33,6 +33,7 @@ app.use("/campaigns", campaignRouter);
 app.use("/layouts", layoutRouter);
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
+app.get("/", (req, res) => res.send('Welcome to my app. <br/> <a href="https://github.com/DemaPy">Author</a>'));
 
 app.use(logErrors);
 app.use(handlePrismaError);
@@ -41,3 +42,5 @@ const PORT = process.env.PORT || 6666;
 app.listen(PORT, () => {
   console.log("Server started at port:", PORT);
 });
+
+module.exports = app;

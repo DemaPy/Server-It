@@ -110,7 +110,6 @@ export class AuthController {
         data: {
           ...withHashedPassword,
           role: Role.USER,
-          username: "dema",
           name: "dema",
         },
       });
