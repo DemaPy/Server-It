@@ -33,7 +33,7 @@ app.use("/campaigns", campaignRouter);
 app.use("/layouts", layoutRouter);
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
-app.get("/", (req, res) => res.send('Welcome to my app. <br/> <a href="https://github.com/DemaPy">Author</a>'));
+app.get("/", (req, res) => res.send('Welcome to my app.<br/> <a href="https://github.com/DemaPy">Author</a>'));
 
 app.use(logErrors);
 app.use(handlePrismaError);
