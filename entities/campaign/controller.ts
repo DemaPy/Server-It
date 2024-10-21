@@ -73,7 +73,7 @@ export class CampaignController implements Controller {
 
       res.send({
         status: "success",
-        message: "Campaign has been created.",
+        message: "Campaign has been created",
         data: { ...createdCampaign, layout: createdLayouts },
       });
     } catch (error) {
