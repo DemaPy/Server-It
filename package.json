@@ -4,13 +4,7 @@
   "description": "",
   "main": "/api/index.ts",
   "scripts": {
-    "dev": "nodemon ./api/index.ts",
-    "build": "rm -rf ./js/ && tsc",
-    "migrate:create": "prisma mograte dev --create-only",
-    "migrate": "prisma migrate dev",
-    "migrate:prod": "prisma migrate deploy",
-    "vercel-build": "",
-    "seed": "node prisma/seed.ts"
+
   },
   "keywords": [],
   "author": "",
