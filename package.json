@@ -2,13 +2,14 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
+  "main": "/api/index.ts",
   "scripts": {
-    "dev": "nodemon index.ts",
+    "dev": "nodemon ./api/index.ts",
     "build": "rm -rf ./js/ && tsc",
     "migrate:create": "prisma mograte dev --create-only",
     "migrate": "prisma migrate dev",
     "migrate:prod": "prisma migrate deploy",
+    "vercel-build": "",
     "seed": "node prisma/seed.ts"
   },
   "keywords": [],

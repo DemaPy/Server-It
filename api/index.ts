@@ -12,8 +12,8 @@ const {
   campaignRouter,
   layoutRouter,
   userRouter,
-} = require("./routes");
-const { handlePrismaError, logErrors } = require("./middlewares/errorHandling");
+} = require("../routes");
+const { handlePrismaError, logErrors } = require("../middlewares/errorHandling");
 const app = express();
 
 var corsOptions = {
@@ -38,8 +38,9 @@ app.get("/", (req, res) => res.send('Welcome to my app.<br/> <a href="https://gi
 app.use(logErrors);
 app.use(handlePrismaError);
 
-app.listen(3000, () => {
-  console.log("Server started at port:", 3000);
+const PORT = process.env.PORT || 6666
+app.listen(PORT, () => {
+  console.log("Server started at port:", PORT);
 });
 
 module.exports = app;
