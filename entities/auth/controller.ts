@@ -111,6 +111,7 @@ export class AuthController {
           ...withHashedPassword,
           role: Role.USER,
           name: "dema",
+          username: "todo",
         },
       });
 
