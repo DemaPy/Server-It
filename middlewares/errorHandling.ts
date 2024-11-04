@@ -16,7 +16,7 @@ export function handlePrismaError(
       // The .code property can be accessed in a type-safe manner
       res.status(400).send({
         status: "error",
-        message: "DB error happend",
+        message: "DB error happend" + err.message,
       });
       return;
     }
