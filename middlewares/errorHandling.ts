@@ -15,7 +15,7 @@ export function handlePrismaError(
       // The .code property can be accessed in a type-safe manner
       res.status(400).send({
         status: "error",
-        message: "DB error happend",
+        message: "DB error happend" + err.message,
       });
       return;
     }
@@ -29,7 +29,7 @@ export function handlePrismaError(
     }
     res.status(400).send({
       status: "error",
-      message: "Something went wrong",
+      message: "Something went wrong: " + err.message,
     });
   } else {
     next(err);
