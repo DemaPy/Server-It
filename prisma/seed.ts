@@ -7,7 +7,6 @@ const userData: Prisma.UserCreateInput[] = [
     name: "Seed",
     password: "",
     role: "USER",
-    username: "todo"
   },
 ];
 const templateData: Prisma.TemplateCreateInput[] = [];
