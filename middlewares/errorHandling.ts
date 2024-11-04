@@ -11,7 +11,6 @@ export function handlePrismaError(
   next: NextFunction
 ) {
   if (err) {
-    console.log(err)
     if (err instanceof PrismaClientKnownRequestError) {
       // The .code property can be accessed in a type-safe manner
       res.status(400).send({
@@ -30,7 +29,7 @@ export function handlePrismaError(
     }
     res.status(400).send({
       status: "error",
-      message: "Something went wrong",
+      message: "Something went wrong: " + err.message,
     });
   } else {
     next(err);
